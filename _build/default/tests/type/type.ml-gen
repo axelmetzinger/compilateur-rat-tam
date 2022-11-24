@@ -1,0 +1,2 @@
+(** @canonical Type.Test *)
+module Test = Type__Test
