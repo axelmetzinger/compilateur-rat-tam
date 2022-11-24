@@ -16,48 +16,48 @@ let pathFichiersRat = "../../../../../tests/gestion_id/avec_fonction/fichiersRat
 
 let%test_unit "testDoubleDeclarationVariable1" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDoubleDeclarationVariable1.rat")
+    let _ = compiler (pathFichiersRat^"testDoubleDeclarationVariable1.rat")
     in raise ErreurNonDetectee
   with
   | DoubleDeclaration("x") -> ()  
 
 let%test_unit "testDoubleDeclarationVariable2" = 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDoubleDeclarationVariable2.rat") in ()
+  let _ = compiler (pathFichiersRat^"testDoubleDeclarationVariable2.rat") in ()
 
 let%test_unit "testDoubleDeclarationVariable3" = 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDoubleDeclarationVariable3.rat") in ()
+  let _ = compiler (pathFichiersRat^"testDoubleDeclarationVariable3.rat") in ()
 	  
 let%test_unit "testDoubleDeclarationVariable4" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDoubleDeclarationVariable4.rat") 
+    let _ = compiler (pathFichiersRat^"testDoubleDeclarationVariable4.rat") 
     in raise ErreurNonDetectee
   with
   | DoubleDeclaration("x") -> ()
 
 let%test_unit "testDoubleDeclarationVariable5" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDoubleDeclarationVariable5.rat")
+    let _ = compiler (pathFichiersRat^"testDoubleDeclarationVariable5.rat")
     in raise ErreurNonDetectee
   with
   | DoubleDeclaration("x") -> ()
 
 let%test_unit "testDoubleDeclarationVariable6" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDoubleDeclarationVariable6.rat") 
+    let _ = compiler (pathFichiersRat^"testDoubleDeclarationVariable6.rat") 
     in raise ErreurNonDetectee
   with
   | DoubleDeclaration("x") -> ()
 
 let%test_unit "testDoubleDeclarationVariable7" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDoubleDeclarationVariable7.rat") 
+    let _ = compiler (pathFichiersRat^"testDoubleDeclarationVariable7.rat") 
     in raise ErreurNonDetectee
   with
   | DoubleDeclaration("x") -> ()
 
 let%test_unit "testAffectation5" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testAffectation5.rat")
+    let _ = compiler (pathFichiersRat^"testAffectation5.rat")
     in raise ErreurNonDetectee
   with
   | MauvaiseUtilisationIdentifiant("add") -> ()
@@ -65,151 +65,149 @@ let%test_unit "testAffectation5" =
 
 let%test_unit "testUtilisation4" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation4.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation4.rat")
     in raise ErreurNonDetectee
   with
   | MauvaiseUtilisationIdentifiant("add") -> ()
 
 let%test_unit "testUtilisation5" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation5.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation5.rat")
     in raise ErreurNonDetectee
   with
   | MauvaiseUtilisationIdentifiant("add") -> ()
 
 let%test_unit "testUtilisation6" = 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation6.rat") in ()
+  let _ = compiler (pathFichiersRat^"testUtilisation6.rat") in ()
 
 let%test_unit "testUtilisation7" = 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation7.rat") in ()
+  let _ = compiler (pathFichiersRat^"testUtilisation7.rat") in ()
 
 let%test_unit "testUtilisation8" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation8.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation8.rat")
     in raise ErreurNonDetectee
   with
   | MauvaiseUtilisationIdentifiant("x") -> ()
 
 let%test_unit "testUtilisation9" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation9.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation9.rat")
     in raise ErreurNonDetectee
   with
   | MauvaiseUtilisationIdentifiant("z") -> ()
 
 let%test_unit "testUtilisation20" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation20.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation20.rat")
     in raise ErreurNonDetectee
   with
   | IdentifiantNonDeclare("y") -> ()
 
 let%test_unit "testUtilisation21" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation21.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation21.rat")
     in raise ErreurNonDetectee
   with
   | IdentifiantNonDeclare("y") -> ()
 
 let%test_unit "testUtilisation22" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation22.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation22.rat")
     in raise ErreurNonDetectee
   with
   | IdentifiantNonDeclare("y") -> ()
 
 let%test_unit "testUtilisation23" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation23.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation23.rat")
     in raise ErreurNonDetectee
   with
   | IdentifiantNonDeclare("x") -> ()
 
 let%test_unit "testUtilisation24" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation24.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation24.rat")
     in raise ErreurNonDetectee
   with
   | IdentifiantNonDeclare("x") -> ()
 
 let%test_unit "testUtilisation25" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation25.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation25.rat")
     in raise ErreurNonDetectee
   with
   | IdentifiantNonDeclare("a") -> ()
 
 let%test_unit "testUtilisation26" = 
   try 
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation26.rat")
+    let _ = compiler (pathFichiersRat^"testUtilisation26.rat")
     in raise ErreurNonDetectee
   with
   | IdentifiantNonDeclare("a") -> ()
 
 let%test_unit "testUtilisation27" = 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/testUtilisation27.rat") in ()
+  let _ = compiler (pathFichiersRat^"testUtilisation27.rat") in ()
 
 let%test_unit "testDeclarationFonction" = 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDeclarationFonction.rat") in ()
+  let _ = compiler (pathFichiersRat^"testDeclarationFonction.rat") in ()
 
 let%test_unit "testDoubleDeclarationFonction" = 
 try 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDoubleDeclarationFonction.rat")
+  let _ = compiler (pathFichiersRat^"testDoubleDeclarationFonction.rat")
   in raise ErreurNonDetectee
 with
 | DoubleDeclaration("add") -> ()
 
 let%test_unit "testDoubleDeclarationParametre1" = 
 try 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDoubleDeclarationParametre1.rat")
+  let _ = compiler (pathFichiersRat^"testDoubleDeclarationParametre1.rat")
   in raise ErreurNonDetectee
 with
 | DoubleDeclaration("a") -> ()
 
 let%test_unit "testDoubleDeclarationParametre2" = 
 try 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/testDoubleDeclarationParametre2.rat")
+  let _ = compiler (pathFichiersRat^"testDoubleDeclarationParametre2.rat")
   in raise ErreurNonDetectee
 with
 | DoubleDeclaration("a") -> ()
 
 let%test_unit "testRecursiviteFonction" = 
-let _ = compiler (pathFichiersRat^"src-rat-tds-test/testRecursiviteFonction.rat") in ()
+let _ = compiler (pathFichiersRat^"testRecursiviteFonction.rat") in ()
 
 let%test_unit "test"= 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/test.rat") in ()
+  let _ = compiler (pathFichiersRat^"test.rat") in ()
 
 let%test_unit "test2" = 
-  let _ = compiler (pathFichiersRat^"src-rat-tds-test/test2.rat") in ()
-
-(* Fichiers de tests de la génération de code -> doivent passer la TDS *)
+  let _ = compiler (pathFichiersRat^"test2.rat") in ()
 
 let%test_unit "testRetourFonction"=
   try
-    let _ = compiler (pathFichiersRat^"src-rat-tds-test/testRetourFonction.rat")
+    let _ = compiler (pathFichiersRat^"testRetourFonction.rat")
     in raise ErreurNonDetectee
   with
   | RetourDansMain -> ()
 
-let%test_unit "code_factrec" = 
-  let _ = compiler   (pathFichiersRat^"src-rat-tam-test/factrec.rat") in ()
+(* Fichiers de tests de la génération de code -> doivent passer la TDS *)
+open Unix
+open Filename
 
-let%test_unit "code_testfun1" = 
-  let _ = compiler   (pathFichiersRat^"src-rat-tam-test/testfun1.rat") in ()
+let rec test d p_tam = 
+  try 
+    let file = readdir d in
+    if (check_suffix file ".rat") 
+    then
+    (
+     try
+       let _ = compiler  (p_tam^file) in (); 
+     with e -> print_string (p_tam^file); print_newline(); raise e;
+    )
+    else ();
+    test d p_tam
+  with End_of_file -> ()
 
-let%test_unit "code_testfun2" = 
-  let _ = compiler   (pathFichiersRat^"src-rat-tam-test/testfun2.rat") in ()
-
-let%test_unit "code_testfun3" = 
-  let _ = compiler   (pathFichiersRat^"src-rat-tam-test/testfun3.rat") in ()
-
-let%test_unit "code_testfun4" = 
-  let _ = compiler   (pathFichiersRat^"src-rat-tam-test/testfun4.rat") in ()
-
-let%test_unit "code_testfuns" = 
-  let _ = compiler   (pathFichiersRat^"src-rat-tam-test/testfuns.rat") in ()
-
-let%test_unit "code_complique" = 
-  let _ = compiler   (pathFichiersRat^"src-rat-tam-test/complique.rat") in ()
-
-
+let%test_unit "all_tam" =
+  let p_tam = "../../../../../tests/tam/avec_fonction/fichiersRat/" in
+  let d = opendir p_tam in
+  test d p_tam

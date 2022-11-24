@@ -34,58 +34,58 @@ let pathFichiersRat = "../../../../../tests/tam/sans_fonction/fichiersRat/"
 (* requires ppx_expect in jbuild, and `opam install ppx_expect` *)
 
 let%expect_test "testprintint" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testprintint.rat");
+  runtam (pathFichiersRat^"testprintint.rat");
   [%expect{| 42 |}]
 
 let%expect_test "testprintbool" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testprintbool.rat");
+  runtam (pathFichiersRat^"testprintbool.rat");
   [%expect{| true |}]
 
 let%expect_test "testprintrat" =
-   runtam (pathFichiersRat^"src-rat-tam-test/testprintrat.rat");
+   runtam (pathFichiersRat^"testprintrat.rat");
    [%expect{| [4/5] |}]
 
 let%expect_test "testaddint" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testaddint.rat");
+  runtam (pathFichiersRat^"testaddint.rat");
   [%expect{| 42 |}]
 
 let%expect_test "testaddrat" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testaddrat.rat");
+  runtam (pathFichiersRat^"testaddrat.rat");
   [%expect{| [7/6] |}]
 
 let%expect_test "testmultint" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testmultint.rat");
+  runtam (pathFichiersRat^"testmultint.rat");
   [%expect{| 440 |}]
 
 let%expect_test "testmultrat" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testmultrat.rat");
+  runtam (pathFichiersRat^"testmultrat.rat");
   [%expect{| [14/3] |}]
 
 let%expect_test "testnum" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testnum.rat");
+  runtam (pathFichiersRat^"testnum.rat");
   [%expect{| 4 |}]
 
 let%expect_test "testdenom" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testdenom.rat");
+  runtam (pathFichiersRat^"testdenom.rat");
   [%expect{| 7 |}]
 
 let%expect_test "testwhile1" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testwhile1.rat");
+  runtam (pathFichiersRat^"testwhile1.rat");
   [%expect{| 19 |}]
 
 let%expect_test "testif1" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testif1.rat");
+  runtam (pathFichiersRat^"testif1.rat");
   [%expect{| 18 |}]
 
 let%expect_test "testif2" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testif2.rat");
+  runtam (pathFichiersRat^"testif2.rat");
   [%expect{| 21 |}]
 
 let%expect_test "factiter" =
-  runtam (pathFichiersRat^"src-rat-tam-test/factiter.rat");
+  runtam (pathFichiersRat^"factiter.rat");
   [%expect{| 120 |}]
 
 let%expect_test "complique" =
-  runtam (pathFichiersRat^"src-rat-tam-test/complique.rat");
+  runtam (pathFichiersRat^"complique.rat");
   [%expect{| [9/4][27/14][27/16][3/2] |}]
 

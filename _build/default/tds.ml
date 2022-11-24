@@ -305,43 +305,43 @@ let afficher_globale tds =
   in afficher tds ""
 
 (* Modifie le type si c'est une InfoVar, ne fait rien sinon *)
-  let modifier_type_info t i =
+let modifier_type_variable t i =
     match !i with
-    |InfoVar (n,_,dep,base) -> i:= InfoVar (n,t,dep,base)
-    | _ -> failwith "Appel modifier_type_info pas sur un InfoVar"
+    | InfoVar (n,_,dep,base) -> i:= InfoVar (n,t,dep,base)
+    | _ -> failwith "Appel modifier_type_variable pas sur un InfoVar"
 
 let%test _ = 
   let info = InfoVar ("x", Undefined, 4 , "SB") in
   let ia = info_to_info_ast info in
-  modifier_type_info Rat ia;
+  modifier_type_variable Rat ia;
   match info_ast_to_info ia with
   | InfoVar ("x", Rat, 4 , "SB") -> true
   | _ -> false
  
 (* Modifie les types de retour et des paramètres si c'est une InfoFun, ne fait rien sinon *)
- let modifier_type_fonction_info t tp i =
+let modifier_type_fonction t tp i =
        match !i with
-       |InfoFun(n,_,_) -> i:= InfoFun(n,t,tp)
-       | _ -> failwith "Appel modifier_type_fonction_info pas sur un InfoFun"
+       | InfoFun(n,_,_) -> i:= InfoFun(n,t,tp)
+       | _ -> failwith "Appel modifier_type_fonction pas sur un InfoFun"
 
 let%test _ = 
   let info = InfoFun ("f", Undefined, []) in
   let ia = info_to_info_ast info in
-  modifier_type_fonction_info Rat [Int ; Int] ia;
+  modifier_type_fonction Rat [Int ; Int] ia;
   match info_ast_to_info ia with
   | InfoFun ("f", Rat, [Int ; Int]) -> true
   | _ -> false
  
 (* Modifie l'emplacement (dépl, registre) si c'est une InfoVar, ne fait rien sinon *)
- let modifier_adresse_info d b i =
+ let modifier_adresse_variable d b i =
      match !i with
      |InfoVar (n,t,_,_) -> i:= InfoVar (n,t,d,b)
-     | _ -> failwith "Appel modifier_adresse_info pas sur un InfoVar"
+     | _ -> failwith "Appel modifier_adresse_variable pas sur un InfoVar"
 
 let%test _ = 
   let info = InfoVar ("x", Rat, 4 , "SB") in
   let ia = info_to_info_ast info in
-  modifier_adresse_info 10 "LB" ia;
+  modifier_adresse_variable 10 "LB" ia;
   match info_ast_to_info ia with
   | InfoVar ("x", Rat, 10 , "LB") -> true
   | _ -> false

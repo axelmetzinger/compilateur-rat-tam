@@ -15,7 +15,7 @@ struct
   type t1 = Ptds.t1
   type t2 = string
 
-(* Vérifie que le programme est corect et calcule la position mémoire des variables *)
+(* Vérifie que le programme est correct et calcule la position mémoire des variables *)
 (* Ptds.t1 -> Pdep.t2 *)
 (* Nécessaire pour les tests de la passe de placement mémoire *)
 let calculer_placement ast = 

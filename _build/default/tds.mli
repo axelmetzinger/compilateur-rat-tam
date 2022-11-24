@@ -1,4 +1,4 @@
-open Type 
+open Type
 
 (* Définition du type des informations associées aux identifiants *)
 type info =
@@ -54,10 +54,10 @@ val info_to_info_ast : info -> info_ast
 val info_ast_to_info : info_ast -> info
 
 (* Modifie le type si c'est une InfoVar, ne fait rien sinon *)
-val modifier_type_info : typ -> info_ast -> unit
+val modifier_type_variable : typ -> info_ast -> unit
 
 (* Modifie les types de retour et des paramètres si c'est une InfoFun, ne fait rien sinon *)
-val modifier_type_fonction_info : typ -> typ list -> info_ast -> unit
+val modifier_type_fonction : typ -> typ list -> info_ast -> unit
 
 (* Modifie l'emplacement (dépl, registre) si c'est une InfoVar, ne fait rien sinon *)
-val modifier_adresse_info : int -> string -> info_ast -> unit
+val modifier_adresse_variable : int -> string -> info_ast -> unit

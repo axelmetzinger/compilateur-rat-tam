@@ -34,35 +34,35 @@ let pathFichiersRat = "../../../../../tests/tam/avec_fonction/fichiersRat/"
 
 (* requires ppx_expect in jbuild, and `opam install ppx_expect` *)
 let%expect_test "testfun1" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testfun1.rat");
+  runtam (pathFichiersRat^"testfun1.rat");
   [%expect{| 1 |}]
 
 let%expect_test "testfun2" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testfun2.rat");
+  runtam (pathFichiersRat^"testfun2.rat");
   [%expect{| 7 |}]
 
 let%expect_test "testfun3" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testfun3.rat");
+  runtam (pathFichiersRat^"testfun3.rat");
   [%expect{| 10 |}]
 
 let%expect_test "testfun4" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testfun4.rat");
+  runtam (pathFichiersRat^"testfun4.rat");
   [%expect{| 10 |}]
 
 let%expect_test "testfun5" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testfun5.rat");
+  runtam (pathFichiersRat^"testfun5.rat");
   [%expect{| |}]
 
 let%expect_test "testfun6" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testfun6.rat");
+  runtam (pathFichiersRat^"testfun6.rat");
   [%expect{|truetrue|}]
 
 let%expect_test "testfuns" =
-  runtam (pathFichiersRat^"src-rat-tam-test/testfuns.rat");
+  runtam (pathFichiersRat^"testfuns.rat");
   [%expect{| 28 |}]
 
 let%expect_test "factrec" =
-  runtam (pathFichiersRat^"src-rat-tam-test/factrec.rat");
+  runtam (pathFichiersRat^"factrec.rat");
   [%expect{| 120 |}]
 
 

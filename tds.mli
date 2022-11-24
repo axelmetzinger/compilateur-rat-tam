@@ -1,4 +1,4 @@
-open Type 
+open Type
 
 (* Définition du type des informations associées aux identifiants *)
 type info =
