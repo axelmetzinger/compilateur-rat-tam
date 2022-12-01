@@ -61,3 +61,15 @@ val modifier_type_fonction : typ -> typ list -> info_ast -> unit
 
 (* Modifie l'emplacement (dépl, registre) si c'est une InfoVar, ne fait rien sinon *)
 val modifier_adresse_variable : int -> string -> info_ast -> unit
+
+(* Retourne le nom d'une fonction à partir de son info_ast *)
+val get_nom_fun_info_ast : info_ast -> string
+
+(* Retourne s'il existe le type d'une variable à partir de son info_ast *)
+val get_type_var_info_ast : info_ast -> typ
+
+(* Retourne s'il existe le type de retour et la liste des types des paramètres d'une fonction à partir de son info_ast *)
+val get_type_fun_info_ast : info_ast -> (typ * typ list)
+
+(* Retourne s'il existe l'adresse d'une variable à partir de son info_ast *)
+val get_adresse_var_info_ast : info_ast -> (int * string)

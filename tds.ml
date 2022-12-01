@@ -345,5 +345,34 @@ let%test _ =
   match info_ast_to_info ia with
   | InfoVar ("x", Rat, 10 , "LB") -> true
   | _ -> false
-    
-   
+
+(* Retourne le nom d'une fonction à partir de son info_ast *)
+let get_nom_fun_info_ast ia =
+  match !ia with
+  | InfoFun (n,_,_) -> n
+  | _ -> failwith "Appel get_nom_fun_info_ast pas sur un InfoFun"
+
+
+(* Retourne s'il existe le type d'une variable à partir de son info_ast *)
+let get_type_var_info_ast ia =
+  match !ia with
+  | InfoVar(_, t, _, _) ->
+    if (t = Undefined) then failwith "Type Undefined"
+    else t
+  | _ -> failwith "Appel get_type_var_info_ast pas sur un InfoVar"
+
+
+(* Retourne s'il existe le type de retour et la liste des types des paramètres d'une fonction à partir de son info_ast *)
+let get_type_fun_info_ast ia =
+  match !ia with
+  | InfoFun(_, t_ret, lt_param) ->
+    if (t_ret = Undefined) then failwith "Type Undefined"
+    else (t_ret, lt_param)
+  | _ -> failwith "Appel get_type_fun_info_ast pas sur un InfoFun"
+
+
+(* Retourne s'il existe l'adresse d'une variable à partir de son info_ast *)
+let get_adresse_var_info_ast ia =
+  match !ia with
+  | InfoVar(_, _, dep, base) -> (dep, base)
+  | _ -> failwith "Appel get_adresse_var_info_ast pas sur un InfoVar"

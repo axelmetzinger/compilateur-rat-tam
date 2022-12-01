@@ -51,7 +51,7 @@ let rec analyse_tds_expression tds e =
     let ne1 = analyse_tds_expression tds e1 in
     let ne2 = analyse_tds_expression tds e2 in
     AstTds.Binaire(op, ne1, ne2)
-  | _ -> failwith "Internal error : analyse_tds_expression"
+  | _ -> failwith "Internal error: analyse_tds_expression"
 
 
 (* analyse_tds_instruction : tds -> info_ast option -> AstSyntax.instruction -> AstTds.instruction *)
@@ -178,10 +178,10 @@ and analyse_tds_bloc tds oia li =
    (* afficher_locale tdsbloc ; *) (* décommenter pour afficher la table locale *)
    nli
 
-(* analyse_tds_parametre : tds -> (typ * AstSyntax.Ident) -> (typ * AstTds.Indent) *)
+(* analyse_tds_parametre : tds -> (typ * string) -> (typ * info_ast) *)
 (* Paramètre tds : la table des symboles courante *)
 (* Paramètre (t, n) : type (t) et nom (n) du paramètre à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme la liste de paramètres en une liste de paramètres de type (typ * AstTds.Indent) list *)
+(* Vérifie la bonne utilisation du paramètre et le tranforme en paramètre de type (typ * info_ast) *)
 let analyse_tds_parametre tds (t, n) =
   match chercherLocalement tds n with
     | None ->
