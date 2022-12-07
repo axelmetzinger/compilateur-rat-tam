@@ -9,34 +9,42 @@ open Code
 type t1 = AstPlacement.programme
 type t2 = string
 
-(* analyse_code_expression : tds -> AstPlacement.expression -> AstType.expression *)
-(* Paramètre tds : la table des symboles courante *)
+(* analyse_code_expression : AstPlacement.expression -> string *)
 (* Paramètre e : l'expression à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme l'expression
-en une expression de type AstType.expression *)
-(* Erreur si mauvaise utilisation des identifiants *)
+(* Tranforme l'expression en chaîne d'instructions en code TAM représentant l'expression *)
 let rec analyse_code_expression e =
   match e with
   | AstType.AppelFonction(ia, le) ->
+    (* Analyse des expressions correspondant aux paramètres de la fonction *)
     List.fold_left (^) "" (List.map analyse_code_expression le)
+    (* Appel de la fonction *)
     ^ call "SB" (get_nom_fun_info_ast ia)
   | AstType.Ident(ia) ->
+    (* Récupération de l'adresse de la variable *)
     let (depl, base) = get_adresse_var_info_ast ia in
+    (* Récupération de la taille de la variable *)
     let taille = getTaille(get_type_var_info_ast ia) in
+    (* Chargement de l'adresse de la variable *)
     loada depl base
+    (* Chargement de la valeur de la variable *)
     ^ loadi taille
   | AstType.Booleen(b) ->
+    (* Charge 1 dans la pile si le booléen est vrai et 0 sinon *)
     if b then loadl_int 1
     else loadl_int 0
-  | AstType.Entier(i) -> loadl_int i
+  | AstType.Entier(i) -> loadl_int i  (* Charge l'entier dans la pile *)
   | AstType.Unaire(op, e) ->
+    (* Analyse de l'expression du paramètre de l'opération *)
     analyse_code_expression e
+    (* Exécution du code correspondant à l'opération *)
     ^ (match op with
       | AstType.Numerateur -> pop 0 1
       | AstType.Denominateur -> pop 1 1)
   | AstType.Binaire(op, e1, e2) ->
+    (* Analyse des expressions des paramètres de l'opération *)
     analyse_code_expression e1
     ^ analyse_code_expression e2
+    (* Exécution du code correspondant à l'opération *)
     ^ (match op with
       | AstType.Fraction -> ""
       | AstType.PlusInt -> subr "IAdd"
@@ -47,80 +55,116 @@ let rec analyse_code_expression e =
       | AstType.EquBool -> subr "IEq"
       | AstType.Inf -> subr "ILss")
 
-(* analyse_code_bloc : tds -> info_ast option -> AstPlacement.bloc -> AstType.bloc *)
+
+(* analyse_code_bloc : AstPlacement.bloc -> string *)
 (* Paramètre li : liste d'instructions à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme le bloc en un bloc de type AstType.bloc *)
-(* Erreur si mauvaise utilisation des identifiants *)
+(* Paramètre taille : taille des variables locales au bloc en mémoire (pile) *)
+(* Tranforme le bloc en une chaîne d'instructions correspondant au bloc *)
 let rec analyse_code_bloc (li, taille) =
-  (* TODO: Rajouter commentaire *)
+  (* Réservation d'espace mémoire pour toutes les variables locales au bloc *)
   push taille
+  (* Analyse de chaque instruction du bloc *)
   ^ List.fold_left (^) "" (List.map (analyse_code_instruction) li)
+  (* Libération de l'espace mémoire réservé pour les variables locales au bloc *)
   ^ pop 0 taille
-(* analyse_code_instruction : tds -> info_ast option -> AstPlacement.instruction -> AstType.instruction *)
+
+(* analyse_code_instruction : AstPlacement.instruction -> string *)
 (* Paramètre i : l'instruction à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme l'instruction
-en une instruction de type AstType.instruction *)
-(* Erreur si mauvaise utilisation des identifiants *)
+(* Tranforme l'instruction en une chaîne correspondant à l'instruction *)
 and analyse_code_instruction i =
   match i with
+  (* Même traitement pour la déclaration et l'affectation
+     car mémoire réservé à la création du bloc *)
   | AstPlacement.Declaration(ia, e) | AstPlacement.Affectation (ia,e) ->
+    (* Récupération de l'adresse de la variable *)
     let (dep, base) = get_adresse_var_info_ast ia in
+    (* Récupération de la taille de la variable *)
     let taille = getTaille (get_type_var_info_ast ia) in
+    (* Analyse de l'expression à affecter *)
     analyse_code_expression e
+    (* Chargement de l'adresse de la variable *)
     ^ loada dep base
+    (* Affectation de la valeur de l'expression à la variable *)
     ^ storei taille
     | AstPlacement.AffichageBool e ->
+      (* Analyse de l'expression à afficher *)
       analyse_code_expression e
+      (* Appel de la fonction d'affichage pour les booléens *)
       ^ subr "BOut"
     | AstPlacement.AffichageInt e ->
+      (* Analyse de l'expression à afficher *)
       analyse_code_expression e
+      (* Appel de la fonction d'affichage pour les entiers *)
       ^ subr "IOut"
     | AstPlacement.AffichageRat e ->
+      (* Analyse de l'expression à afficher *)
       analyse_code_expression e
+      (* Appel de la fonction d'affichage pour les rationnels *)
       ^ call "SB" "ROut"
   | AstPlacement.Conditionnelle (c,bt,be) ->
+    (* Génération d'une étiquette pour référencer
+       le bloc "sinon" de la conditionnelle *)
     let lelse = getEtiquette() in
+    (* Génération d'une étiquette pour référencer
+       la fin de la conditionnelle *)
     let lend = getEtiquette() in
+    (* Analyse de l'expression - condition *)
     analyse_code_expression c
+    (* Saut conditionnel vers le bloc "sinon" si la condition est fausse *)
     ^ jumpif 0 lelse
+    (* Analyse du bloc "alors" *)
     ^ analyse_code_bloc bt
+    (* Saut inconditionnel vers la fin du "si" *)
     ^ jump lend
+    (* Etiquette correspondant au bloc "sinon" *)
     ^ label lelse
+    (* Analyse du bloc "sinon" *)
     ^ analyse_code_bloc be
+    (* Etiquette correspondant à la fin du "si" *)
     ^ label lend
   | AstPlacement.TantQue (c, b) ->
+    (* Génération d'une étiquette pour référencer
+       le début de la boucle *)
     let lbeg = getEtiquette() in
+    (* Génération d'une étiquette pour référencer
+       la fin de la boucle *)
     let lend = getEtiquette() in
+    (* Etiquette correspondant au début de la boucle *)
     label lbeg
+    (* Analyse de l'expression - condition *)
     ^ analyse_code_expression c
+    (* Saut conditionnel vers la fin de la boucle si la condition est fausse *)
     ^ jumpif 0 lend
+    (* Analyse du bloc de la boucle *)
     ^ analyse_code_bloc b
+    (* Saut inconditionnel vers le début de la boucle *)
     ^ jump lbeg
+    (* Etiquette correspondant à la fin de la boucle *)
     ^ label lend
   | AstPlacement.Retour (e, tret, tparam) ->
+    (* Analyse de l'expression à retourner *)
     analyse_code_expression e
     (* Inutile de dépiler les variables locales à la fonction car le RETURN s'en charge *)
+    (* Appel à la méthode de retour de TAM *)
     ^ return tret tparam
-  | AstPlacement.Empty -> ""
+  | AstPlacement.Empty -> ""  (* Ne rien faire *)
 
 
-(* TODO: commentaires *)
-(* analyse_code_fonction : tds -> AstPlacement.fonction -> AstType.fonction *)
-(* Paramètre tds : la table des symboles courante *)
+(* analyse_code_fonction : AstPlacement.fonction -> string *)
 (* Paramètre : la fonction à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme la fonction
-en une fonction de type AstType.fonction *)
-(* Erreur si mauvaise utilisation des identifiants *)
+(* Tranforme la fonction en chaîne d'instructions correpsondant à la fonction *)
 let analyse_code_fonction (AstPlacement.Fonction(ia,_,b)) =
+  (* Etiquette correspondant au début de la fonction *)
   label (get_nom_fun_info_ast ia)
+  (* Analyse du bloc de la fonction *)
   ^ analyse_code_bloc b
-  ^ halt (* PERMET D'EMPECHER BOUCLE INIFINE -> A REMPLACER PAR VERIFICATION RETURN DANS FUNC *)
+  (* HALT : Permet d'empêcher le programme de boucler 
+     TODO: A remplacer par la vérification qu'il y a bien un return dans chaque fonction *)
+  ^ halt
 
-(* analyser : AstPlacement.programme -> AstType.programme *)
+(* analyser : AstPlacement.programme -> string *)
 (* Paramètre : le programme à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme le programme
-en un programme de type AstType.programme *)
-(* Erreur si mauvaise utilisation des identifiants *)
+(* Tranforme le programme en une chaîne d'instruction TAM correspondant au programme *)
 let analyser (AstPlacement.Programme (fonctions, prog)) =
   getEntete()
   ^ List.fold_left (^) "" (List.map (analyse_code_fonction) fonctions)
