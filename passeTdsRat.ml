@@ -51,7 +51,6 @@ let rec analyse_tds_expression tds e =
     let ne1 = analyse_tds_expression tds e1 in
     let ne2 = analyse_tds_expression tds e2 in
     AstTds.Binaire(op, ne1, ne2)
-  | _ -> failwith "Internal error: analyse_tds_expression"
 
 
 (* analyse_tds_instruction : tds -> info_ast option -> AstSyntax.instruction -> AstTds.instruction *)

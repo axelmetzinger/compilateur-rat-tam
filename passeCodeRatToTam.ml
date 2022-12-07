@@ -114,6 +114,7 @@ en une fonction de type AstType.fonction *)
 let analyse_code_fonction (AstPlacement.Fonction(ia,_,b)) =
   label (get_nom_fun_info_ast ia)
   ^ analyse_code_bloc b
+  ^ halt (* PERMET D'EMPECHER BOUCLE INIFINE -> A REMPLACER PAR VERIFICATION RETURN DANS FUNC *)
 
 (* analyser : AstPlacement.programme -> AstType.programme *)
 (* Paramètre : le programme à analyser *)
