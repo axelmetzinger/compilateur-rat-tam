@@ -8,6 +8,20 @@ open Type
 type t1 = Ast.AstTds.programme
 type t2 = Ast.AstType.programme
 
+let rec analyse_type_affectable a =
+  match a with
+  | AstTds.Ident(ia) ->
+    (* Renvoie d'un couple composé du type de l'identifiant et du nouvel Ident *)
+    (get_type_var_info_ast ia, AstType.Ident(ia))
+  | AstTds.Const(ia, v) ->
+    (* Renvoie d'un couple composé du type de la constante et du nouvel Const *)
+    (Int, AstType.Const(ia, v))
+  | AstTds.DeRef da ->
+    let (ta, nda) = analyse_type_affectable da in
+    match ta with
+    | Pointeur(t) -> (t, AstType.DeRef(nda))
+    | _ -> raise (TypeInattendu(ta, Pointeur(Undefined)))
+
 (* analyse_type_expression : AstTds.expression -> AstType.expression *)
 (* Paramètre e : l'expression à analyser *)
 (* Vérifie le bon typage des identifiants et transforme l'expression
@@ -30,9 +44,11 @@ let rec analyse_type_expression e =
     if (est_compatible_list lte ltf) then (tf, AstType.AppelFonction(ia, nlet))
     (* Si les types ne sont pas compatibes, levée de l'exception TypesParametresInattendus *)
     else raise (TypesParametresInattendus(lte, ltf))
-  | AstTds.Ident(ia) ->
-    (* Renvoie d'un couple composé du type de l'identifiant et du nouvel Ident *)
-    (get_type_var_info_ast ia, AstType.Ident(ia))
+  | AstTds.Affectable(a) ->
+    (* Analyse de l'affectable *)
+    let (ta, na) = analyse_type_affectable a in
+    (* Renvoie d'un couple composé du type de l'affectable et du nouvel Affectable *)
+    (ta, AstType.Affectable(na))
   | AstTds.Booleen(b) ->
     (* Renvoie d'un couple composé du type (Bool) et du nouveau Booléen *)
     (Bool, AstType.Booleen(b))
@@ -76,6 +92,11 @@ let rec analyse_type_expression e =
     (* Renvoie un couple composé du type de retour de l'expression binaire
        et du nouveau Binaire surchargé *)
     (t_ret, AstType.Binaire(nop, ne1, ne2))
+  | AstTds.New t -> (Pointeur(t), AstType.New t)
+  | AstTds.Adresse ia ->
+    let t = get_type_var_info_ast ia in
+    (Pointeur(t), AstType.Adresse(ia))
+  | AstTds.Null -> (Pointeur(Undefined), AstType.Null)
 
 
 (* analyse_type_bloc : AstTds.bloc -> AstType.bloc *)
@@ -105,16 +126,17 @@ and analyse_type_instruction i =
       end
     (* Sinon, levée de l'exception TypeInattendu *)
     else raise (TypeInattendu(te, t))
-  | AstTds.Affectation (ia,e) ->
+  | AstTds.Affectation (a,e) ->
+    (* Analyse de l'affectable *)
+    let (ta, na) = analyse_type_affectable a in
     (* Analyse de l'expression *)
     let (te, ne) = analyse_type_expression e in
     (* Récupération du type de l'identifiant attendu *)
-    let t = get_type_var_info_ast ia in
-    (* Si le type de l'expression est compatible avec le type de l'identifiant,
+    (* Si le type de l'expression est compatible avec le type de l'affectable,
        renvoie d'une nouvelle Affectation *)
-    if (t = te) then AstType.Affectation(ia, ne)
+    if (ta = te) then AstType.Affectation(na, ne)
     (* Sinon, levée de l'exception TypeInattendu *)
-    else (raise (TypeInattendu(te, t)))
+    else (raise (TypeInattendu(te, ta)))
   | AstTds.Affichage e ->
     (* Analyse de l'expression *)
     let (te, ne) = analyse_type_expression e in
@@ -124,6 +146,7 @@ and analyse_type_instruction i =
       | Bool -> AstType.AffichageBool(ne)
       | Int -> AstType.AffichageInt(ne)
       | Rat -> AstType.AffichageRat(ne)
+      | Pointeur(_) -> failwith "TODO: Implémenter un affichage pour l'adresse"
       | Undefined -> failwith "Internal error: analyse_type_instruction"
     end
   | AstTds.Conditionnelle (c,tia,eia) ->

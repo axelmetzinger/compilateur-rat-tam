@@ -9,6 +9,26 @@ open Code
 type t1 = AstPlacement.programme
 type t2 = string
 
+(* analyse_code_affectable : AstPlacement.affectable -> string *)
+(* Paramètre e : l'expression à analyser *)
+(* Tranforme l'expression en chaîne d'instructions en code TAM représentant l'expression *)
+let rec analyse_code_affecable a ecriture =
+  match a with
+  | AstType.Ident ia ->
+    (* Récupération de l'adresse de la variable *)
+    let (depl, base) = get_adresse_var_info_ast ia in
+    (* Récupération de la taille de la variable *)
+    let taille = getTaille(get_type_var_info_ast ia) in
+    (* Chargement de la valeur de la variable *)
+    load taille depl base
+  | AstType.Const(_, v) ->
+    (* Charge la constante dans la pile *)
+    loadl_int v
+  | AstType.DeRef da ->
+    analyse_code_affecable da ecriture
+    ^ (if ecriture then storei 1
+    else loadi 1)
+
 (* analyse_code_expression : AstPlacement.expression -> string *)
 (* Paramètre e : l'expression à analyser *)
 (* Tranforme l'expression en chaîne d'instructions en code TAM représentant l'expression *)
@@ -19,15 +39,9 @@ let rec analyse_code_expression e =
     List.fold_left (^) "" (List.map analyse_code_expression le)
     (* Appel de la fonction *)
     ^ call "SB" (get_nom_fun_info_ast ia)
-  | AstType.Ident(ia) ->
-    (* Récupération de l'adresse de la variable *)
-    let (depl, base) = get_adresse_var_info_ast ia in
-    (* Récupération de la taille de la variable *)
-    let taille = getTaille(get_type_var_info_ast ia) in
-    (* Chargement de l'adresse de la variable *)
-    loada depl base
-    (* Chargement de la valeur de la variable *)
-    ^ loadi taille
+  | AstType.Affectable(a) ->
+    (* Analyse de l'affectable *)
+    analyse_code_affecable a false
   | AstType.Booleen(b) ->
     (* Charge 1 dans la pile si le booléen est vrai et 0 sinon *)
     if b then loadl_int 1
@@ -54,6 +68,15 @@ let rec analyse_code_expression e =
       | AstType.EquInt -> subr "IEq"
       | AstType.EquBool -> subr "IEq"
       | AstType.Inf -> subr "ILss")
+  | AstType.New t ->
+    let taille = getTaille t in
+    loadl_int taille
+    ^ subr "MAlloc"
+  | AstType.Adresse ia ->
+    let (depl, reg) = get_adresse_var_info_ast ia in
+    loada depl reg
+  | AstType.Null ->
+    loadl_int 0
 
 
 (* analyse_code_bloc : AstPlacement.bloc -> string *)
@@ -75,17 +98,18 @@ and analyse_code_instruction i =
   match i with
   (* Même traitement pour la déclaration et l'affectation
      car mémoire réservé à la création du bloc *)
-  | AstPlacement.Declaration(ia, e) | AstPlacement.Affectation (ia,e) ->
+  | AstPlacement.Declaration(ia, e) ->
     (* Récupération de l'adresse de la variable *)
-    let (dep, base) = get_adresse_var_info_ast ia in
+    let (depl, base) = get_adresse_var_info_ast ia in
     (* Récupération de la taille de la variable *)
     let taille = getTaille (get_type_var_info_ast ia) in
     (* Analyse de l'expression à affecter *)
     analyse_code_expression e
-    (* Chargement de l'adresse de la variable *)
-    ^ loada dep base
-    (* Affectation de la valeur de l'expression à la variable *)
-    ^ storei taille
+    (* Affectation de la valeur à la variable *)
+    ^ store taille depl base
+    | AstPlacement.Affectation (a,e) ->
+      analyse_code_expression e
+      ^ analyse_code_affecable a true
     | AstPlacement.AffichageBool e ->
       (* Analyse de l'expression à afficher *)
       analyse_code_expression e

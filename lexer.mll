@@ -29,6 +29,7 @@
         "denom",   DENOM;
         "true",    TRUE;
         "false",   FALSE;
+        "new",     NEW;
         "return",  RETURN
       ];
     fun id ->
@@ -56,8 +57,10 @@ rule token = parse
 | "]"          { CF }
 | "/"          { SLASH }
 | "+"          { PLUS }
-| "*"          { MULT }
+| "*"          { ASTER }
 | "<"          { INF }
+| "&"          { ADDR }
+| "null"       { NULL }
 
 (* constantes entières *)
 | ("-")?['0'-'9']+ as i

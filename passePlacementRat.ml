@@ -35,7 +35,7 @@ and analyse_placement_instruction i depl reg =
       modifier_adresse_variable depl reg ia;
       (AstPlacement.Declaration(ia, e), getTaille (get_type_var_info_ast ia))
     end
-  | AstType.Affectation(ia,e) -> (AstPlacement.Affectation(ia, e), 0)
+  | AstType.Affectation(a,e) -> (AstPlacement.Affectation(a, e), 0)
   | AstType.AffichageBool(e) -> (AstPlacement.AffichageBool(e), 0)
   | AstType.AffichageInt(e) -> (AstPlacement.AffichageInt(e), 0)
   | AstType.AffichageRat(e) -> (AstPlacement.AffichageRat(e), 0)
