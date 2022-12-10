@@ -32,18 +32,18 @@ let rec analyse_type_expression e =
   | AstTds.AppelFonction(ia, le) ->
     (* Récupération du type de retour de la fonction et des types de ses paramètres attendus *)
     let (tf, ltf) = get_type_fun_info_ast ia in
-    (* TODO: Les 3 lignes suivantes sont refactorable en un fold *)
-    (* Analyse des expression corresopndant aux paramètres d'appel *)
-    let nle = List.map (analyse_type_expression) le in
-    (* Récupération de la liste des types d'appel *)
-    let lte = List.map (fun x -> fst x) nle in
-    (* Récupration de la liste des expressions traitées *)
-    let nlet = List.map (fun x -> snd x) nle in
+    (* Analyse des expression corresopndant aux paramètres d'appel 
+       Récupère la liste des types d'appel effectif
+       et la liste des expressions traitées *)
+    let (lt, nle) = List.fold_right (fun x (lt_traite, le_traite) ->
+      let (t, ne) = analyse_type_expression x in
+      (t::lt_traite, ne::le_traite)
+    ) le ([], []) in
     (* Renvoie d'un couple composé du type de retour de la fonction et du nouvel
        AppelFonction si les types d'appel et attendus sont compatibles *)
-    if (est_compatible_list lte ltf) then (tf, AstType.AppelFonction(ia, nlet))
+    if (est_compatible_list lt ltf) then (tf, AstType.AppelFonction(ia, nle))
     (* Si les types ne sont pas compatibes, levée de l'exception TypesParametresInattendus *)
-    else raise (TypesParametresInattendus(lte, ltf))
+    else raise (TypesParametresInattendus(lt, ltf))
   | AstTds.Affectable(a) ->
     (* Analyse de l'affectable *)
     let (ta, na) = analyse_type_affectable a in
@@ -102,6 +102,7 @@ let rec analyse_type_expression e =
        et du nouveau Ternaire *)
     if (tc = Bool) then
       if (est_compatible te1 te2) then (te1, AstType.Ternaire(nc, ne1, ne2))
+      (* Sinon, levée de l'exception TypesRetourIncompatibles *)
       else raise (TypesRetourIncompatibles(te1, te2))
     (* Sinon, levée de l'exception TypeInattendu *)
     else raise (TypeInattendu(tc, Bool))
@@ -159,7 +160,7 @@ and analyse_type_instruction i =
       | Bool -> AstType.AffichageBool(ne)
       | Int -> AstType.AffichageInt(ne)
       | Rat -> AstType.AffichageRat(ne)
-      | Pointeur(_) -> failwith "TODO: Implémenter un affichage pour l'adresse"
+      | Pointeur(_) -> failwith "TODO: Affichage d'une adresse à implémenter"
       | Undefined -> failwith "Internal error: analyse_type_instruction"
     end
   | AstTds.Conditionnelle (c,tia,eia) ->
@@ -211,10 +212,11 @@ let analyse_type_parametre (t, ia) =
 (* Vérifie le bon typage des paramètres et de son bloc et transforme la fonction
     en une fonction de type AstType.fonction *)
 let analyse_type_fonction (AstTds.Fonction(t,ia,lp,b)) =
-  (* Analyse des paramètres *)
-  let lpia = List.map (analyse_type_parametre) lp in
-  (* Récupération des types des paramètres *)
-  let ltp = List.map (fun x -> fst x) lp in
+  (* Récupèration des types et de l'analyse des paramètres *)
+  let (ltp, lpia) = List.fold_right (fun x (ltp_traite, lpia_traite) ->
+    let (t, _) = x in
+    (t::ltp_traite, (analyse_type_parametre x)::lpia_traite)
+  ) lp ([], []) in
   (* Modification du type des paramètres *)
   modifier_type_fonction t ltp ia;
   (* Analyse du bloc *)

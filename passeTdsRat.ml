@@ -101,7 +101,7 @@ and analyse_tds_expression tds e =
         begin
           match info_ast_to_info ia with
           | InfoVar _ -> AstTds.Adresse(ia)
-          | _ -> raise (MauvaiseUtilisationIdentifiant nom)
+          | _ -> raise (AccesAdresseInvalide nom)
         end
     end
   | AstSyntax.Null -> AstTds.Null
