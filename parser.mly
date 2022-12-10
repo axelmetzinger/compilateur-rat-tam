@@ -10,6 +10,7 @@ open Ast.AstSyntax
 %token <string> ID
 %token RETURN
 %token PV
+%token DP
 %token AO
 %token AF
 %token PF
@@ -38,6 +39,7 @@ open Ast.AstSyntax
 %token NULL
 %token NEW
 %token ADDR
+%token QUESTION
 
 (* Type de l'attribut synthétisé des non-terminaux *)
 %type <programme> prog
@@ -69,6 +71,7 @@ i :
 | aff=a EQUAL e1=e PV               {Affectation (aff,e1)}
 | CONST n=ID EQUAL e=ENTIER PV      {Constante (n,e)}
 | PRINT e1=e PV                     {Affichage (e1)}
+| IF exp=e li=bloc                  {Conditionnelle (exp,li,[])}
 | IF exp=e li1=bloc ELSE li2=bloc   {Conditionnelle (exp,li1,li2)}
 | WHILE exp=e li=bloc               {TantQue (exp,li)}
 | RETURN exp=e PV                   {Retour (exp)}
@@ -84,21 +87,22 @@ a :
 | ASTER aff=a               {DeRef(aff)}
 
 e : 
-| CALL n=ID PO lp=e* PF     {AppelFonction (n,lp)}
-| CO e1=e SLASH e2=e CF     {Binaire(Fraction,e1,e2)}
-| TRUE                      {Booleen true}
-| FALSE                     {Booleen false}
-| e=ENTIER                  {Entier e}
-| NUM e1=e                  {Unaire(Numerateur,e1)}
-| DENOM e1=e                {Unaire(Denominateur,e1)}
-| PO e1=e PLUS e2=e PF      {Binaire (Plus,e1,e2)}
-| PO e1=e ASTER e2=e PF     {Binaire (Mult,e1,e2)}
-| PO e1=e EQUAL e2=e PF     {Binaire (Equ,e1,e2)}
-| PO e1=e INF e2=e PF       {Binaire (Inf,e1,e2)}
-| PO exp=e PF               {exp}
-| aff=a                     {Affectable(aff)}
-| NULL                      {Null}
-| PO NEW t=typ PF           {New t}
-| ADDR n=ID                 {Adresse n}
+| CALL n=ID PO lp=e* PF                 {AppelFonction (n,lp)}
+| TRUE                                  {Booleen true}
+| FALSE                                 {Booleen false}
+| e=ENTIER                              {Entier e}
+| NUM e1=e                              {Unaire (Numerateur, e1)}
+| DENOM e1=e                            {Unaire (Denominateur, e1)}
+| CO e1=e SLASH e2=e CF                 {Binaire (Fraction, e1, e2)}
+| PO e1=e PLUS e2=e PF                  {Binaire (Plus, e1, e2)}
+| PO e1=e ASTER e2=e PF                 {Binaire (Mult, e1, e2)}
+| PO e1=e EQUAL e2=e PF                 {Binaire (Equ, e1, e2)}
+| PO e1=e INF e2=e PF                   {Binaire (Inf, e1, e2)}
+| PO exp=e PF                           {exp}
+| PO ec=e QUESTION ev=e DP ef=e PF      {Ternaire(ec, ev, ef)}
+| aff=a                                 {Affectable(aff)}
+| NULL                                  {Null}
+| PO NEW t=typ PF                       {New t}
+| ADDR n=ID                             {Adresse n}
 
 

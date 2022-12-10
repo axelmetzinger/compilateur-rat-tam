@@ -47,20 +47,22 @@ rule token = parse
 | "//"[^'\n']* { token lexbuf }
 
 (* caractères spéciaux de RAT *)
-| ";"          { PV }
-| "{"          { AO }
-| "}"          { AF }
-| "("          { PO }
-| ")"          { PF }
-| "="          { EQUAL }
-| "["          { CO }
-| "]"          { CF }
-| "/"          { SLASH }
-| "+"          { PLUS }
-| "*"          { ASTER }
-| "<"          { INF }
-| "&"          { ADDR }
-| "null"       { NULL }
+| ";"           { PV }
+| ":"           { DP }
+| "{"           { AO }
+| "}"           { AF }
+| "("           { PO }
+| ")"           { PF }
+| "="           { EQUAL }
+| "["           { CO }
+| "]"           { CF }
+| "/"           { SLASH }
+| "+"           { PLUS }
+| "*"           { ASTER }
+| "<"           { INF }
+| "&"           { ADDR }
+| "?"           { QUESTION }
+| "null"        { NULL }
 
 (* constantes entières *)
 | ("-")?['0'-'9']+ as i

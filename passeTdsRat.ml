@@ -85,6 +85,11 @@ and analyse_tds_expression tds e =
     let ne1 = analyse_tds_expression tds e1 in
     let ne2 = analyse_tds_expression tds e2 in
     AstTds.Binaire(op, ne1, ne2)
+  | AstSyntax.Ternaire (c, e1, e2) ->
+    let nc = analyse_tds_expression tds c in
+    let ne1 = analyse_tds_expression tds e1 in
+    let ne2 = analyse_tds_expression tds e2 in
+    AstTds.Ternaire(nc, ne1, ne2)
   | AstSyntax.New t -> AstTds.New(t)
   | AstSyntax.Adresse nom ->
     begin

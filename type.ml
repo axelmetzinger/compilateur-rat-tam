@@ -9,12 +9,19 @@ let rec string_of_type t =
   | Undefined -> "Undefined"
 
 
-let est_compatible t1 t2 =
+let rec est_compatible t1 t2 =
   match t1, t2 with
   | Bool, Bool -> true
   | Int, Int -> true
   | Rat, Rat -> true 
-  | Pointeur(_), Pointeur(_) -> true
+  | Pointeur(nt1), Pointeur(nt2) ->
+    begin
+      match nt1, nt2 with
+      | Undefined, Undefined -> true
+      | Undefined, _ -> true
+      | _, Undefined -> true
+      | _, _ -> est_compatible nt1 nt2
+    end
   | _ -> false 
 
 let%test _ = est_compatible Bool Bool

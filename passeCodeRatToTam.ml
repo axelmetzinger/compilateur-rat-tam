@@ -19,8 +19,11 @@ let rec analyse_code_affecable a ecriture =
     let (depl, base) = get_adresse_var_info_ast ia in
     (* Récupération de la taille de la variable *)
     let taille = getTaille(get_type_var_info_ast ia) in
-    (* Chargement de la valeur de la variable *)
-    load taille depl base
+    let t = get_type_var_info_ast ia in
+    if ((est_compatible t (Pointeur(Undefined)))
+      || not ecriture)
+    then load taille depl base
+    else store taille depl base
   | AstType.Const(_, v) ->
     (* Charge la constante dans la pile *)
     loadl_int v
@@ -68,6 +71,27 @@ let rec analyse_code_expression e =
       | AstType.EquInt -> subr "IEq"
       | AstType.EquBool -> subr "IEq"
       | AstType.Inf -> subr "ILss")
+  | AstType.Ternaire (c, e1, e2) ->
+    (* Génération d'une étiquette pour référencer
+    l'expression "sinon" de l'opérateur ternaire *)
+    let lelse = getEtiquette() in
+    (* Génération d'une étiquette pour référencer
+      la fin de l'opérateur ternaire *)
+    let lend = getEtiquette() in
+    (* Analyse de l'expression - condition *)
+    analyse_code_expression c
+    (* Saut conditionnel vers le bloc "sinon" si la condition est fausse *)
+    ^ jumpif 0 lelse
+    (* Analyse de l'expression "alors" *)
+    ^ analyse_code_expression e1
+    (* Saut inconditionnel vers la fin de l'opérateur *)
+    ^ jump lend
+    (* Etiquette correspondant à l'expression "sinon" *)
+    ^ label lelse
+    (* Analyse de l'expression "sinon" *)
+    ^ analyse_code_expression e2
+    (* Etiquette correspondant à la fin de l'opérateur *)
+    ^ label lend
   | AstType.New t ->
     let taille = getTaille t in
     loadl_int taille
@@ -126,26 +150,42 @@ and analyse_code_instruction i =
       (* Appel de la fonction d'affichage pour les rationnels *)
       ^ call "SB" "ROut"
   | AstPlacement.Conditionnelle (c,bt,be) ->
-    (* Génération d'une étiquette pour référencer
-       le bloc "sinon" de la conditionnelle *)
-    let lelse = getEtiquette() in
-    (* Génération d'une étiquette pour référencer
-       la fin de la conditionnelle *)
-    let lend = getEtiquette() in
-    (* Analyse de l'expression - condition *)
-    analyse_code_expression c
-    (* Saut conditionnel vers le bloc "sinon" si la condition est fausse *)
-    ^ jumpif 0 lelse
-    (* Analyse du bloc "alors" *)
-    ^ analyse_code_bloc bt
-    (* Saut inconditionnel vers la fin du "si" *)
-    ^ jump lend
-    (* Etiquette correspondant au bloc "sinon" *)
-    ^ label lelse
-    (* Analyse du bloc "sinon" *)
-    ^ analyse_code_bloc be
-    (* Etiquette correspondant à la fin du "si" *)
-    ^ label lend
+    begin
+      match be with
+      | [], _ ->
+        (* Génération d'une étiquette pour référencer
+           la fin de la conditionnelle *)
+        let lend = getEtiquette() in
+        (* Analyse de l'expression - condition *)
+        analyse_code_expression c
+        (* Saut conditionnel vers la fin du "si" si la condition est fausse *)
+        ^ jumpif 0 lend
+        (* Analyse du bloc "alors" *)
+        ^ analyse_code_bloc bt
+        (* Etiquette correspondant à la fin du "si" *)
+        ^ label lend
+      | _ ->
+        (* Génération d'une étiquette pour référencer
+          le bloc "sinon" de la conditionnelle *)
+        let lelse = getEtiquette() in
+        (* Génération d'une étiquette pour référencer
+          la fin de la conditionnelle *)
+        let lend = getEtiquette() in
+        (* Analyse de l'expression - condition *)
+        analyse_code_expression c
+        (* Saut conditionnel vers le bloc "sinon" si la condition est fausse *)
+        ^ jumpif 0 lelse
+        (* Analyse du bloc "alors" *)
+        ^ analyse_code_bloc bt
+        (* Saut inconditionnel vers la fin du "si" *)
+        ^ jump lend
+        (* Etiquette correspondant au bloc "sinon" *)
+        ^ label lelse
+        (* Analyse du bloc "sinon" *)
+        ^ analyse_code_bloc be
+        (* Etiquette correspondant à la fin du "si" *)
+        ^ label lend
+    end
   | AstPlacement.TantQue (c, b) ->
     (* Génération d'une étiquette pour référencer
        le début de la boucle *)

@@ -92,6 +92,19 @@ let rec analyse_type_expression e =
     (* Renvoie un couple composé du type de retour de l'expression binaire
        et du nouveau Binaire surchargé *)
     (t_ret, AstType.Binaire(nop, ne1, ne2))
+  | AstTds.Ternaire (c, e1, e2) ->
+    (* Analyse des expressions *)
+    let (tc, nc) = analyse_type_expression c in
+    let (te1, ne1) = analyse_type_expression e1 in
+    let (te2, ne2) = analyse_type_expression e2 in
+    (* Si le type de la condition est Bool et que les types des deux expressions
+       sont compatibles, renvoie d'un couple composé du type de l'expression
+       et du nouveau Ternaire *)
+    if (tc = Bool) then
+      if (est_compatible te1 te2) then (te1, AstType.Ternaire(nc, ne1, ne2))
+      else raise (TypesRetourIncompatibles(te1, te2))
+    (* Sinon, levée de l'exception TypeInattendu *)
+    else raise (TypeInattendu(tc, Bool))
   | AstTds.New t -> (Pointeur(t), AstType.New t)
   | AstTds.Adresse ia ->
     let t = get_type_var_info_ast ia in

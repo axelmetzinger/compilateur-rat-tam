@@ -43,6 +43,8 @@ type expression =
   | Unaire of unaire * expression
   (* Opération binaire représentée par l'opérateur, l'opérande gauche et l'opérande droite *)
   | Binaire of binaire * expression * expression
+  (* Opérateur ternaire représenté par la condition, l'expression si vrai et l'expression si faux *)
+  | Ternaire of expression * expression * expression
   (* Instanciation d'un espace mémoire pour un pointeur *)
   | New of typ
   (* Adresse d'une variable *)
@@ -104,6 +106,7 @@ type expression =
   | Entier of int
   | Unaire of AstSyntax.unaire * expression
   | Binaire of AstSyntax.binaire * expression * expression
+  | Ternaire of expression * expression * expression
   | New of typ
   | Adresse of Tds.info_ast
   | Null
@@ -163,6 +166,7 @@ type expression =
   | Entier of int
   | Unaire of unaire * expression
   | Binaire of binaire * expression * expression
+  | Ternaire of expression * expression * expression
   | New of typ
   | Adresse of Tds.info_ast
   | Null
