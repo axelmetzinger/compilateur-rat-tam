@@ -231,6 +231,29 @@ let analyse_tds_parametre tds (t, n) =
     | Some _ -> raise (DoubleDeclaration n)
 
 
+let rec aInstructionRetour nf li =
+  match li with
+  | [] -> false
+  | (AstSyntax.Retour _)::[] -> true
+  | (AstSyntax.Retour _)::_ ->
+    print_endline ("\027[31m/!\\ Attention : code mort, le `return` de la fonction `" ^ nf
+      ^ "` est suivi d'autres instructions\027[0m");
+    true
+  | (AstSyntax.Conditionnelle (_,t,e))::q ->
+    begin
+      match aInstructionRetour nf t, aInstructionRetour nf e with
+      | true, true -> true
+      | _ -> aInstructionRetour nf q
+    end
+  | (AstSyntax.TantQue (_,b))::q (*| (AstSyntax.Loop b)::q *) ->  (* TODO: Décommenter lorsque Loop implémenté *)
+    begin
+      match aInstructionRetour nf b with
+      | true -> true
+      | _ -> aInstructionRetour nf q
+    end
+  | _::q -> aInstructionRetour nf q
+
+
 (* analyse_tds_fonction : tds -> AstSyntax.fonction -> AstTds.fonction *)
 (* Paramètre maintds : la table des symboles courante *)
 (* Paramètre : la fonction à analyser *)
@@ -242,19 +265,23 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li)) =
   match chercherLocalement maintds n with
   (* La fonction n'est pas dans la tds *)
   | None ->
-    (* Création d'une nouvelle tds *)
-    let tdsfonc = creerTDSFille maintds in
-    (* Transformation des paramètres de la fonction *)
-    let nlp = List.map (analyse_tds_parametre tdsfonc) lp  in
-    (* Création de l'information sur la fonction *)
-    let info = InfoFun (n, Undefined, []) in
-    (* Création du pointeur sur l'information *)
-    let ia = info_to_info_ast info in
-    (* Ajout dans la tds *)
-    ajouter maintds n ia;
-    (* Transformation du bloc de la fonction *)
-    let nb = analyse_tds_bloc tdsfonc (Some ia) li in
-    AstTds.Fonction(t, ia, nlp, nb)
+    (* On vérifie que la fonction contient bien un return *)
+    if aInstructionRetour n li then
+      (* Création d'une nouvelle tds *)
+      let tdsfonc = creerTDSFille maintds in
+      (* Transformation des paramètres de la fonction *)
+      let nlp = List.map (analyse_tds_parametre tdsfonc) lp  in
+      (* Création de l'information sur la fonction *)
+      let info = InfoFun (n, Undefined, []) in
+      (* Création du pointeur sur l'information *)
+      let ia = info_to_info_ast info in
+      (* Ajout dans la tds *)
+      ajouter maintds n ia;
+      (* Transformation du bloc de la fonction *)
+      let nb = analyse_tds_bloc tdsfonc (Some ia) li in
+      AstTds.Fonction(t, ia, nlp, nb)
+    (* La fonction ne contient pas de return levée de l'exception FonctionSansRetour *)
+    else raise (FonctionSansRetour n)
   (* La fonction est déjà dans la tds *)
   | Some _ -> raise (DoubleDeclaration n)
 

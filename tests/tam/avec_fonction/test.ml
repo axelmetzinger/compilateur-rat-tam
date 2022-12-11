@@ -1,5 +1,8 @@
 open Rat
 open Compilateur
+open Exceptions
+
+exception ErreurNonDetectee
 
 (* Changer le chemin d'accès du jar. *)
 let runtamcmde = "java -jar ../../../../../tests/runtam.jar"
@@ -49,9 +52,13 @@ let%expect_test "testfun4" =
   runtam (pathFichiersRat^"testfun4.rat");
   [%expect{| 10 |}]
 
-let%expect_test "testfun5" =
-  runtam (pathFichiersRat^"testfun5.rat");
-  [%expect{| |}]
+let%test_unit "testfun5" =
+  try 
+    let _ = runtam (pathFichiersRat^"testfun5.rat")
+    in raise ErreurNonDetectee
+  with
+  | FonctionSansRetour("f1") -> ()
+
 
 let%expect_test "testfun6" =
   runtam (pathFichiersRat^"testfun6.rat");

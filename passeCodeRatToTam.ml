@@ -222,9 +222,6 @@ let analyse_code_fonction (AstPlacement.Fonction(ia,_,b)) =
   label (get_nom_fun_info_ast ia)
   (* Analyse du bloc de la fonction *)
   ^ analyse_code_bloc b
-  (* HALT : Permet d'empêcher le programme de boucler 
-     TODO: A remplacer par la vérification qu'il y a bien un return dans chaque fonction *)
-  ^ halt
 
 (* analyser : AstPlacement.programme -> string *)
 (* Paramètre : le programme à analyser *)

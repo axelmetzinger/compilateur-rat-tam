@@ -131,7 +131,10 @@ let rec test d p_tam =
     (
      try
        let _ = compiler  (p_tam^file) in (); 
-     with e -> print_string (p_tam^file); print_newline(); raise e;
+     with e ->
+      (match file, e with
+      | "testfun5.rat", FonctionSansRetour "f1" -> ()
+      | _ -> print_string (p_tam^file); print_newline(); raise e)
     )
     else ();
     test d p_tam

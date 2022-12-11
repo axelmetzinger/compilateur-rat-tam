@@ -16,3 +16,6 @@ exception TypesRetourIncompatibles of typ * typ (* Les deux types renvoyés devr
 
 (* Utilisation illégale de return dans le programme principal *)
 exception RetourDansMain
+
+(* Utilisation d'une fonction sans return *)
+exception FonctionSansRetour of string
