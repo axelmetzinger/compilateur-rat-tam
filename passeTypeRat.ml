@@ -184,6 +184,11 @@ and analyse_type_instruction i =
       AstType.TantQue(nc, nb)
     (* Sinon, levée de l'exception TypeInattendu *)
     else raise (TypeInattendu(tc, Bool))
+  | AstTds.Loop (n, li) ->
+    let nli = analyse_type_bloc li in
+    AstType.Loop(n, nli)
+  | AstTds.Continue (n) -> AstType.Continue (n)
+  | AstTds.Break (n) -> AstType.Break (n)
   | AstTds.Retour (e, ia) ->
     (* Analyse de l'expression *)
     let (te, ne) = analyse_type_expression e in

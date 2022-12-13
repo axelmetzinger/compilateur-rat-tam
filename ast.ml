@@ -65,8 +65,14 @@ and instruction =
   | Affichage of expression
   (* Conditionnelle représentée par la condition, le bloc then et le bloc else *)
   | Conditionnelle of expression * bloc * bloc
-  (*Boucle TantQue représentée par la conditin d'arrêt de la boucle et le bloc d'instructions *)
+  (* Boucle TantQue représentée par la condition d'arrêt de la boucle et le bloc d'instructions *)
   | TantQue of expression * bloc
+  (* Boucle Loop représentée par son nom et le bloc d'instruction *)
+  | Loop of string * bloc
+  (* continue d'une loop *)
+  | Continue of string
+  (* break d'une loop *)
+  | Break of string
   (* return d'une fonction *)
   | Retour of expression
 
@@ -122,6 +128,9 @@ and instruction =
   | Affichage of expression
   | Conditionnelle of expression * bloc * bloc
   | TantQue of expression * bloc
+  | Loop of string * bloc
+  | Continue of string
+  | Break of string
   | Retour of expression * Tds.info_ast  (* les informations sur la fonction à laquelle est associé le retour *)
   | Empty (* les nœuds ayant disparus: Const *)
 
@@ -183,6 +192,9 @@ type bloc = instruction list
   | AffichageBool of expression
   | Conditionnelle of expression * bloc * bloc
   | TantQue of expression * bloc
+  | Loop of string * bloc
+  | Continue of string
+  | Break of string
   | Retour of expression * Tds.info_ast
   | Empty (* les nœuds ayant disparus: Const *)
 
@@ -218,6 +230,9 @@ and instruction =
 | AffichageBool of expression
 | Conditionnelle of expression * bloc * bloc
 | TantQue of expression * bloc
+| Loop of string * bloc
+| Continue of string
+| Break of string
 | Retour of expression * int * int (* taille du retour et taille des paramètres *)
 | Empty (* les nœuds ayant disparus: Const *)
 

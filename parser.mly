@@ -40,6 +40,9 @@ open Ast.AstSyntax
 %token NEW
 %token ADDR
 %token QUESTION
+%token LOOP
+%token CONTINUE
+%token BREAK
 
 (* Type de l'attribut synthétisé des non-terminaux *)
 %type <programme> prog
@@ -74,6 +77,12 @@ i :
 | IF exp=e li=bloc                  {Conditionnelle (exp,li,[])}
 | IF exp=e li1=bloc ELSE li2=bloc   {Conditionnelle (exp,li1,li2)}
 | WHILE exp=e li=bloc               {TantQue (exp,li)}
+| LOOP li=bloc                      {Loop ("loop", li)}
+| n=ID DP LOOP li=bloc              {Loop (n, li)}
+| CONTINUE PV                       {Continue ("loop")}
+| CONTINUE n=ID                     {Continue (n)}
+| BREAK PV                          {Break ("loop")}
+| BREAK n=ID PV                     {Break (n)}
 | RETURN exp=e PV                   {Retour (exp)}
 
 typ :
@@ -81,10 +90,12 @@ typ :
 | INT                       {Int}
 | RAT                       {Rat}
 | t=typ ASTER               {Pointeur (t)}
+| PO t=typ PF               {t}
 
 a :
 | n=ID                      {Ident n}
 | ASTER aff=a               {DeRef(aff)}
+| PO aff=a PF               {aff}
 
 e : 
 | CALL n=ID PO lp=e* PF                 {AppelFonction (n,lp)}
@@ -94,15 +105,15 @@ e :
 | NUM e1=e                              {Unaire (Numerateur, e1)}
 | DENOM e1=e                            {Unaire (Denominateur, e1)}
 | CO e1=e SLASH e2=e CF                 {Binaire (Fraction, e1, e2)}
-| PO e1=e PLUS e2=e PF                  {Binaire (Plus, e1, e2)}
-| PO e1=e ASTER e2=e PF                 {Binaire (Mult, e1, e2)}
-| PO e1=e EQUAL e2=e PF                 {Binaire (Equ, e1, e2)}
-| PO e1=e INF e2=e PF                   {Binaire (Inf, e1, e2)}
-| PO exp=e PF                           {exp}
+| e1=e PLUS e2=e                        {Binaire (Plus, e1, e2)}
+| e1=e ASTER e2=e                       {Binaire (Mult, e1, e2)}
+| e1=e EQUAL e2=e                       {Binaire (Equ, e1, e2)}
+| e1=e INF e2=e                         {Binaire (Inf, e1, e2)}
 | PO ec=e QUESTION ev=e DP ef=e PF      {Ternaire(ec, ev, ef)}
 | aff=a                                 {Affectable(aff)}
 | NULL                                  {Null}
 | PO NEW t=typ PF                       {New t}
 | ADDR n=ID                             {Adresse n}
+| PO exp=e PF                           {exp}
 
 

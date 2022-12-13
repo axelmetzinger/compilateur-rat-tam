@@ -15,7 +15,7 @@ type info_ast = info ref
 type tds =
   | Nulle
   (* Table courante : la table mère - la table courante *)
-  | Courante of tds * (string,info_ast) Hashtbl.t
+  | Courante of tds * (string, info_ast) Hashtbl.t
 
 
 (* Créer une information à associer à l'AST à partir d'une info *)

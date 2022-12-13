@@ -100,25 +100,25 @@ let rec analyse_code_expression e =
     let (depl, reg) = get_adresse_var_info_ast ia in
     loada depl reg
   | AstType.Null ->
-    loadl_int 0
+    loadl_int 0   (* TODO: Problème car adresse 0 existe dans la pile *)
 
 
 (* analyse_code_bloc : AstPlacement.bloc -> string *)
 (* Paramètre li : liste d'instructions à analyser *)
 (* Paramètre taille : taille des variables locales au bloc en mémoire (pile) *)
 (* Tranforme le bloc en une chaîne d'instructions correspondant au bloc *)
-let rec analyse_code_bloc (li, taille) =
+let rec analyse_code_bloc lloop (li, taille) =
   (* Réservation d'espace mémoire pour toutes les variables locales au bloc *)
   push taille
   (* Analyse de chaque instruction du bloc *)
-  ^ List.fold_left (^) "" (List.map (analyse_code_instruction) li)
+  ^ List.fold_left (^) "" (List.map (analyse_code_instruction lloop) li)
   (* Libération de l'espace mémoire réservé pour les variables locales au bloc *)
   ^ pop 0 taille
 
 (* analyse_code_instruction : AstPlacement.instruction -> string *)
 (* Paramètre i : l'instruction à analyser *)
 (* Tranforme l'instruction en une chaîne correspondant à l'instruction *)
-and analyse_code_instruction i =
+and analyse_code_instruction lloop i =
   match i with
   (* Même traitement pour la déclaration et l'affectation
      car mémoire réservé à la création du bloc *)
@@ -161,7 +161,7 @@ and analyse_code_instruction i =
         (* Saut conditionnel vers la fin du "si" si la condition est fausse *)
         ^ jumpif 0 lend
         (* Analyse du bloc "alors" *)
-        ^ analyse_code_bloc bt
+        ^ analyse_code_bloc lloop bt
         (* Etiquette correspondant à la fin du "si" *)
         ^ label lend
       | _ ->
@@ -176,13 +176,13 @@ and analyse_code_instruction i =
         (* Saut conditionnel vers le bloc "sinon" si la condition est fausse *)
         ^ jumpif 0 lelse
         (* Analyse du bloc "alors" *)
-        ^ analyse_code_bloc bt
+        ^ analyse_code_bloc lloop bt
         (* Saut inconditionnel vers la fin du "si" *)
         ^ jump lend
         (* Etiquette correspondant au bloc "sinon" *)
         ^ label lelse
         (* Analyse du bloc "sinon" *)
-        ^ analyse_code_bloc be
+        ^ analyse_code_bloc lloop be
         (* Etiquette correspondant à la fin du "si" *)
         ^ label lend
     end
@@ -200,11 +200,24 @@ and analyse_code_instruction i =
     (* Saut conditionnel vers la fin de la boucle si la condition est fausse *)
     ^ jumpif 0 lend
     (* Analyse du bloc de la boucle *)
-    ^ analyse_code_bloc b
+    ^ analyse_code_bloc lloop b
     (* Saut inconditionnel vers le début de la boucle *)
     ^ jump lbeg
     (* Etiquette correspondant à la fin de la boucle *)
     ^ label lend
+  | AstPlacement.Loop (n, li) ->
+    let lend = getEtiquette() in
+    let lbeg = n ^ lend in
+    label lbeg
+    ^ analyse_code_bloc ((n, lend)::lloop) li
+    ^ jump lbeg
+    ^ label lend
+  | AstPlacement.Continue (n) ->
+    let (_, lend) = List.find (fun x -> (fst x) = n) lloop in
+    jump (n ^ lend)
+  | AstPlacement.Break (n) ->
+    let (_, lend) = List.find (fun x -> (fst x) = n) lloop in
+    jump (lend)
   | AstPlacement.Retour (e, tret, tparam) ->
     (* Analyse de l'expression à retourner *)
     analyse_code_expression e
@@ -221,7 +234,7 @@ let analyse_code_fonction (AstPlacement.Fonction(ia,_,b)) =
   (* Etiquette correspondant au début de la fonction *)
   label (get_nom_fun_info_ast ia)
   (* Analyse du bloc de la fonction *)
-  ^ analyse_code_bloc b
+  ^ analyse_code_bloc [] b
 
 (* analyser : AstPlacement.programme -> string *)
 (* Paramètre : le programme à analyser *)
@@ -230,5 +243,5 @@ let analyser (AstPlacement.Programme (fonctions, prog)) =
   getEntete()
   ^ List.fold_left (^) "" (List.map (analyse_code_fonction) fonctions)
   ^ label "main"
-  ^ analyse_code_bloc prog
+  ^ analyse_code_bloc [] prog
   ^ halt

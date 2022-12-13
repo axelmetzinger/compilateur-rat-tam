@@ -115,7 +115,7 @@ and analyse_tds_expression tds e =
 (* Vérifie la bonne utilisation des identifiants et transforme l'instruction
 en une instruction de type AstTds.instruction *)
 (* Erreur si mauvaise utilisation des identifiants *)
-let rec analyse_tds_instruction tds oia i =
+let rec analyse_tds_instruction tds oia lloop i =
   match i with
   | AstSyntax.Declaration (t, n, e) ->
       begin
@@ -169,18 +169,24 @@ let rec analyse_tds_instruction tds oia i =
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in
       (* Analyse du bloc then *)
-      let tast = analyse_tds_bloc tds oia t in
+      let tast = analyse_tds_bloc tds oia lloop t in
       (* Analyse du bloc else *)
-      let east = analyse_tds_bloc tds oia e in
+      let east = analyse_tds_bloc tds oia lloop e in
       (* Renvoie la nouvelle structure de la conditionnelle *)
       AstTds.Conditionnelle (nc, tast, east)
   | AstSyntax.TantQue (c,b) ->
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in
       (* Analyse du bloc *)
-      let bast = analyse_tds_bloc tds oia b in
+      let bast = analyse_tds_bloc tds oia lloop b in
       (* Renvoie la nouvelle structure de la boucle *)
       AstTds.TantQue (nc, bast)
+  | AstSyntax.Loop (nom, b) ->
+    if (List.exists (fun x -> x = nom) lloop) then print_endline ("\027[31m/!\\ Attention : loop de même nom imbriqués (`"^ nom ^"`)\027[0m");
+    let nb = analyse_tds_bloc tds oia (nom::lloop) b in
+    AstTds.Loop(nom, nb)
+  | AstSyntax.Continue(n) -> (*TODO: CACA manque verif nom existe*) AstTds.Continue(n)
+  | AstSyntax.Break(n) -> (*TODO: CACA manque verif nom existe*) AstTds.Break(n)
   | AstSyntax.Retour (e) ->
       begin
       (* On récupère l'information associée à la fonction à laquelle le return est associée *)
@@ -202,13 +208,13 @@ let rec analyse_tds_instruction tds oia i =
 (* Paramètre li : liste d'instructions à analyser *)
 (* Vérifie la bonne utilisation des identifiants et transforme le bloc en un bloc de type AstTds.bloc *)
 (* Erreur si mauvaise utilisation des identifiants *)
-and analyse_tds_bloc tds oia li =
+and analyse_tds_bloc tds oia lloop li =
   (* Entrée dans un nouveau bloc, donc création d'une nouvelle tds locale
   pointant sur la table du bloc parent *)
   let tdsbloc = creerTDSFille tds in
   (* Analyse des instructions du bloc avec la tds du nouveau bloc.
      Cette tds est modifiée par effet de bord *)
-   let nli = List.map (analyse_tds_instruction tdsbloc oia) li in
+   let nli = List.map (analyse_tds_instruction tdsbloc oia lloop) li in
    (* afficher_locale tdsbloc ; *) (* décommenter pour afficher la table locale *)
    nli
 
@@ -231,6 +237,7 @@ let analyse_tds_parametre tds (t, n) =
     | Some _ -> raise (DoubleDeclaration n)
 
 
+(* TODO: commentaires *)
 let rec aInstructionRetour nf li =
   match li with
   | [] -> false
@@ -241,8 +248,11 @@ let rec aInstructionRetour nf li =
     true
   | (AstSyntax.Conditionnelle (_,t,e))::q ->
     begin
-      match aInstructionRetour nf t, aInstructionRetour nf e with
-      | true, true -> true
+      match aInstructionRetour nf t, aInstructionRetour nf e, q with
+      | true, true, [] -> true
+      | true, true, _ -> print_endline ("\027[31m/!\\ Attention : code mort, le `return` de la fonction `" ^ nf
+        ^ "` est suivi d'autres instructions\027[0m");
+        true
       | _ -> aInstructionRetour nf q
     end
   | (AstSyntax.TantQue (_,b))::q (*| (AstSyntax.Loop b)::q *) ->  (* TODO: Décommenter lorsque Loop implémenté *)
@@ -278,7 +288,7 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li)) =
       (* Ajout dans la tds *)
       ajouter maintds n ia;
       (* Transformation du bloc de la fonction *)
-      let nb = analyse_tds_bloc tdsfonc (Some ia) li in
+      let nb = analyse_tds_bloc tdsfonc (Some ia) [] li in
       AstTds.Fonction(t, ia, nlp, nb)
     (* La fonction ne contient pas de return levée de l'exception FonctionSansRetour *)
     else raise (FonctionSansRetour n)
@@ -296,5 +306,5 @@ let analyser (AstSyntax.Programme (fonctions,prog)) =
   (* Transformation de la liste de fonctions *)
   let nf = List.map (analyse_tds_fonction tds) fonctions in
   (* Transformation des blocs *)
-  let nb = analyse_tds_bloc tds None prog in
+  let nb = analyse_tds_bloc tds None [] prog in
   AstTds.Programme (nf,nb)

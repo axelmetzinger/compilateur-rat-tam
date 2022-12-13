@@ -48,6 +48,11 @@ and analyse_placement_instruction i depl reg =
     (* Transformation du bloc *)
     let nb = analyse_placement_bloc b depl reg in
     (AstPlacement.TantQue(c, nb), 0)
+  | AstType.Loop (n, li) ->
+    let nli = analyse_placement_bloc li depl reg in
+    (AstPlacement.Loop (n, nli), 0)
+  | AstType.Continue (n) -> (AstPlacement.Continue (n), 0)
+  | AstType.Break (n) -> (AstPlacement.Break (n), 0)
   | AstType.Retour (e, ia) ->
     (* Récupération du type de retour de la fonction *)
     let (t_ret, ltp) = get_type_fun_info_ast ia in
