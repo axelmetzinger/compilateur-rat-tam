@@ -19,17 +19,24 @@ let rec analyse_code_affecable a ecriture =
     let (depl, base) = get_adresse_var_info_ast ia in
     (* Récupération de la taille de la variable *)
     let taille = getTaille(get_type_var_info_ast ia) in
+    (* Récupèration du type de la variable *)
     let t = get_type_var_info_ast ia in
+    (* Si ce type est compatible avec un pointeur ou n'est pas en écriture *)
     if ((est_compatible t (Pointeur(Undefined)))
       || not ecriture)
+    (* Alors on charge en mémoire la variable *)
     then load taille depl base
+    (* Sinon on stock la valeur chargée dans la pile dans la variable *)
     else store taille depl base
   | AstType.Const(_, v) ->
     (* Charge la constante dans la pile *)
     loadl_int v
   | AstType.DeRef da ->
+    (* Analyse de l'expression correspondant à l'affectable *)
     analyse_code_affecable da ecriture
+    (* Si on est en écriture alors écrit à l'adresse en haut de la pile *)
     ^ (if ecriture then storei 1
+    (* Sinon charge la valeur pointée par l'adresse en haut de la pile *)
     else loadi 1)
 
 (* analyse_code_expression : AstPlacement.expression -> string *)
@@ -93,14 +100,17 @@ let rec analyse_code_expression e =
     (* Etiquette correspondant à la fin de l'opérateur *)
     ^ label lend
   | AstType.New t ->
+    (* Allocation de la mémoire pour le pointeur *)
     let taille = getTaille t in
     loadl_int taille
     ^ subr "MAlloc"
   | AstType.Adresse ia ->
+    (* Récupération de l'adresse de la variable *)
     let (depl, reg) = get_adresse_var_info_ast ia in
+    (* Charge en mémoire l'adresse de la variable *)
     loada depl reg
   | AstType.Null ->
-    loadl_int 0   (* TODO: Problème car adresse 0 existe dans la pile *)
+    loadl_int 0 (* Charge l'adresse nulle dans la pile *)
 
 
 (* analyse_code_bloc : AstPlacement.bloc -> string *)
@@ -132,7 +142,9 @@ and analyse_code_instruction lloop i =
     (* Affectation de la valeur à la variable *)
     ^ store taille depl base
     | AstPlacement.Affectation (a,e) ->
+      (* Analyse de l'expression à affecter *)
       analyse_code_expression e
+      (* Analyse de l'affectable *)
       ^ analyse_code_affecable a true
     | AstPlacement.AffichageBool e ->
       (* Analyse de l'expression à afficher *)
@@ -149,6 +161,14 @@ and analyse_code_instruction lloop i =
       analyse_code_expression e
       (* Appel de la fonction d'affichage pour les rationnels *)
       ^ call "SB" "ROut"
+    | AstPlacement.AffichagePointeur e ->
+      (* Affichage du pointeur au format '0x@' avec @ l'adresse du pointeur *)
+      loadl_int 0
+      ^ subr "IOut"
+      ^ loadl_char 'x'
+      ^ subr "COut"
+      ^ analyse_code_expression e
+      ^ subr "IOut"
   | AstPlacement.Conditionnelle (c,bt,be) ->
     begin
       match be with
@@ -206,17 +226,29 @@ and analyse_code_instruction lloop i =
     (* Etiquette correspondant à la fin de la boucle *)
     ^ label lend
   | AstPlacement.Loop (n, li) ->
+    (* Génération d'une étiquette pour référencer
+       la fin de la boucle *)
     let lend = getEtiquette() in
+    (* L'étiquette désignant le début de la boucle
+       correspond au nom de la boucle concaténé à l'étiquette de fin *)
     let lbeg = n ^ lend in
+    (* Etiquette correspondant au début de la boucle *)
     label lbeg
+    (* Analyse du bloc de la boucle *)
     ^ analyse_code_bloc ((n, lend)::lloop) li
+    (* Saut inconditionnel vers le début de la boucle *)
     ^ jump lbeg
+    (* Etiquette correspondant à la fin de la boucle *)
     ^ label lend
   | AstPlacement.Continue (n) ->
+    (* Récupération de l'étiquette de début de la boucle *)
     let (_, lend) = List.find (fun x -> (fst x) = n) lloop in
+    (* Saut inconditionnel vers le début de la boucle *)
     jump (n ^ lend)
   | AstPlacement.Break (n) ->
+    (* Récupération de l'étiquette de fin de la boucle *)
     let (_, lend) = List.find (fun x -> (fst x) = n) lloop in
+    (* Saut inconditionnel vers la fin de la boucle *)
     jump (lend)
   | AstPlacement.Retour (e, tret, tparam) ->
     (* Analyse de l'expression à retourner *)
@@ -240,8 +272,13 @@ let analyse_code_fonction (AstPlacement.Fonction(ia,_,b)) =
 (* Paramètre : le programme à analyser *)
 (* Tranforme le programme en une chaîne d'instruction TAM correspondant au programme *)
 let analyser (AstPlacement.Programme (fonctions, prog)) =
+  (* Génération de l'en-tête du programme *)
   getEntete()
+  (* Génération du code des fonctions *)
   ^ List.fold_left (^) "" (List.map (analyse_code_fonction) fonctions)
+  (* Etiquette correspondant au début du programme principal *)
   ^ label "main"
+  (* Analyse du bloc du programme principal *)
   ^ analyse_code_bloc [] prog
+  (* Appel à la fonction d'arrêt du programme *)
   ^ halt

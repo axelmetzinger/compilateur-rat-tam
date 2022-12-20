@@ -2,9 +2,11 @@ open Type
 open Ast.AstSyntax
 
 (* Exceptions pour la gestion des identificateurs *)
-exception DoubleDeclaration of string 
-exception IdentifiantNonDeclare of string 
-exception MauvaiseUtilisationIdentifiant of string 
+exception DoubleDeclaration of string
+exception IdentifiantNonDeclare of string
+exception ContinueHorsLoop of string
+exception BreakHorsLoop of string
+exception MauvaiseUtilisationIdentifiant of string
 exception AccesAdresseInvalide of string
 
 (* Exceptions pour le typage *)

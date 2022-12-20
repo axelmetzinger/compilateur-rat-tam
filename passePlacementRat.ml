@@ -39,6 +39,7 @@ and analyse_placement_instruction i depl reg =
   | AstType.AffichageBool(e) -> (AstPlacement.AffichageBool(e), 0)
   | AstType.AffichageInt(e) -> (AstPlacement.AffichageInt(e), 0)
   | AstType.AffichageRat(e) -> (AstPlacement.AffichageRat(e), 0)
+  | AstType.AffichagePointeur(e) -> (AstPlacement.AffichagePointeur(e), 0)
   | AstType.Conditionnelle (c,bt,be) ->
     (* Transformation des blocs *)
     let nbt = analyse_placement_bloc bt depl reg in

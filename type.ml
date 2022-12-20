@@ -17,7 +17,6 @@ let rec est_compatible t1 t2 =
   | Pointeur(nt1), Pointeur(nt2) ->
     begin
       match nt1, nt2 with
-      | Undefined, Undefined -> true
       | Undefined, _ -> true
       | _, Undefined -> true
       | _, _ -> est_compatible nt1 nt2

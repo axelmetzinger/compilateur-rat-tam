@@ -190,6 +190,7 @@ type bloc = instruction list
   | AffichageInt of expression
   | AffichageRat of expression
   | AffichageBool of expression
+  | AffichagePointeur of expression
   | Conditionnelle of expression * bloc * bloc
   | TantQue of expression * bloc
   | Loop of string * bloc
@@ -228,6 +229,7 @@ and instruction =
 | AffichageInt of expression
 | AffichageRat of expression
 | AffichageBool of expression
+| AffichagePointeur of expression
 | Conditionnelle of expression * bloc * bloc
 | TantQue of expression * bloc
 | Loop of string * bloc

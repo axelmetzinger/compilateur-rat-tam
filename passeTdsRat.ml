@@ -185,8 +185,12 @@ let rec analyse_tds_instruction tds oia lloop i =
     if (List.exists (fun x -> x = nom) lloop) then print_endline ("\027[31m/!\\ Attention : loop de même nom imbriqués (`"^ nom ^"`)\027[0m");
     let nb = analyse_tds_bloc tds oia (nom::lloop) b in
     AstTds.Loop(nom, nb)
-  | AstSyntax.Continue(n) -> (*TODO: CACA manque verif nom existe*) AstTds.Continue(n)
-  | AstSyntax.Break(n) -> (*TODO: CACA manque verif nom existe*) AstTds.Break(n)
+  | AstSyntax.Continue(n) ->
+    if (List.exists (fun x -> x = n) lloop) then AstTds.Continue(n)
+    else raise (ContinueHorsLoop n)
+  | AstSyntax.Break(n) ->
+    if (List.exists (fun x -> x = n) lloop) then AstTds.Break(n)
+    else raise (BreakHorsLoop n)
   | AstSyntax.Retour (e) ->
       begin
       (* On récupère l'information associée à la fonction à laquelle le return est associée *)
@@ -237,7 +241,12 @@ let analyse_tds_parametre tds (t, n) =
     | Some _ -> raise (DoubleDeclaration n)
 
 
-(* TODO: commentaires *)
+(* aInstructionRetour : string -> AstSyntax.instruction list -> bool *)
+(* Paramètre nf : nom de la fonction en cours d'analyse (nécessaire en cas de warnings) *)
+(* Paramètre li : liste des instructions à analyser *)
+(* Renvoie true si la dernière instruction de la liste est un `return` *)
+(* Renvoie false sinon *)
+(* Affiche un warning si le `return` est suivi d'autres instructions (code mort) *)
 let rec aInstructionRetour nf li =
   match li with
   | [] -> false
@@ -255,7 +264,7 @@ let rec aInstructionRetour nf li =
         true
       | _ -> aInstructionRetour nf q
     end
-  | (AstSyntax.TantQue (_,b))::q (*| (AstSyntax.Loop b)::q *) ->  (* TODO: Décommenter lorsque Loop implémenté *)
+  | (AstSyntax.TantQue (_, b))::q | (AstSyntax.Loop (_, b))::q ->
     begin
       match aInstructionRetour nf b with
       | true -> true

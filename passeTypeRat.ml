@@ -160,7 +160,7 @@ and analyse_type_instruction i =
       | Bool -> AstType.AffichageBool(ne)
       | Int -> AstType.AffichageInt(ne)
       | Rat -> AstType.AffichageRat(ne)
-      | Pointeur(_) -> failwith "TODO: Affichage d'une adresse à implémenter"
+      | Pointeur(_) -> AstType.AffichagePointeur(ne)
       | Undefined -> failwith "Internal error: analyse_type_instruction"
     end
   | AstTds.Conditionnelle (c,tia,eia) ->
@@ -185,10 +185,16 @@ and analyse_type_instruction i =
     (* Sinon, levée de l'exception TypeInattendu *)
     else raise (TypeInattendu(tc, Bool))
   | AstTds.Loop (n, li) ->
+    (* Analyse du bloc *)
     let nli = analyse_type_bloc li in
+    (* Renvoie du nouveau Loop *)
     AstType.Loop(n, nli)
-  | AstTds.Continue (n) -> AstType.Continue (n)
-  | AstTds.Break (n) -> AstType.Break (n)
+  | AstTds.Continue (n) ->
+    (* Renvoie du nouveau Continue *)
+    AstType.Continue (n)
+  | AstTds.Break (n) ->
+    (* Renvoie du nouveau Break *)
+    AstType.Break (n)
   | AstTds.Retour (e, ia) ->
     (* Analyse de l'expression *)
     let (te, ne) = analyse_type_expression e in
