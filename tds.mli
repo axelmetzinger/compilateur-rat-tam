@@ -73,3 +73,6 @@ val get_type_fun_info_ast : info_ast -> (typ * typ list)
 
 (* Retourne s'il existe l'adresse d'une variable à partir de son info_ast *)
 val get_adresse_var_info_ast : info_ast -> (int * string)
+
+(* Retourne s'il existe la valeur d'une constante à partir de son info_ast *)
+val get_valeur_const_info_ast : info_ast -> int

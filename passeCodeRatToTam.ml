@@ -28,10 +28,9 @@ let rec analyse_code_affecable a ecriture =
     then load taille depl base
     (* Sinon on stock la valeur chargée dans la pile dans la variable *)
     else store taille depl base
-  | AstType.Const(ia) -> 
-    let v = get_valeur_const_info_ast ia in 
+  | AstType.Const(ia) ->
     (* Charge la constante dans la pile *)
-    loadl_int v
+    loadl_int (get_valeur_const_info_ast ia)
   | AstType.DeRef da ->
     (* Analyse de l'expression correspondant à l'affectable *)
     analyse_code_affecable da ecriture

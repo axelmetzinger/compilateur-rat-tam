@@ -30,7 +30,7 @@ let rec analyse_tds_affectable tds a ecriture =
           (* C'est une information sur une variable *)
           | InfoVar _ -> AstTds.Ident(ia)
           (* C'est une information sur une constante *)
-          | InfoConst(nom, v) ->
+          | InfoConst(nom, _) ->
             if ecriture then raise (MauvaiseUtilisationIdentifiant nom)
             else AstTds.Const(ia)
           (* C'est une information sur une fonction *)
@@ -182,15 +182,17 @@ let rec analyse_tds_instruction tds oia lloop i =
       (* Renvoie la nouvelle structure de la boucle *)
       AstTds.TantQue (nc, bast)
   | AstSyntax.Loop (nom, b) ->
-    if (List.exists (fun x -> x = nom) lloop) then print_endline ("\027[31m/!\\ Attention : loop de même nom imbriqués (`"^ nom ^"`)\027[0m");
+    if (nom <> "_" && List.exists (fun x -> x = nom) lloop) then print_endline ("\027[31m/!\\ Attention : loop de même nom imbriqués (`"^ nom ^"`)\027[0m");
     let nb = analyse_tds_bloc tds oia (nom::lloop) b in
     AstTds.Loop(nom, nb)
   | AstSyntax.Continue(n) ->
-    if (List.exists (fun x -> x = n) lloop) then AstTds.Continue(n)
-    else raise (ContinueHorsLoop n)
+    if (lloop = []) then raise (ContinueHorsLoop n)
+    else if (n = "" || List.exists (fun x -> x = n) lloop) then AstTds.Continue(n)
+    else raise (IdentifiantNonDeclare n)
   | AstSyntax.Break(n) ->
-    if (List.exists (fun x -> x = n) lloop) then AstTds.Break(n)
-    else raise (BreakHorsLoop n)
+    if (lloop = []) then raise (BreakHorsLoop n)
+    else if (n = "" || List.exists (fun x -> x = n) lloop) then AstTds.Break(n)
+    else raise (IdentifiantNonDeclare n)
   | AstSyntax.Retour (e) ->
       begin
       (* On récupère l'information associée à la fonction à laquelle le return est associée *)

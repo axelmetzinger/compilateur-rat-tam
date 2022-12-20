@@ -77,11 +77,11 @@ i :
 | IF exp=e li=bloc                  {Conditionnelle (exp,li,[])}
 | IF exp=e li1=bloc ELSE li2=bloc   {Conditionnelle (exp,li1,li2)}
 | WHILE exp=e li=bloc               {TantQue (exp,li)}
-| LOOP li=bloc                      {Loop ("loop", li)}
+| LOOP li=bloc                      {Loop ("_", li)}
 | n=ID DP LOOP li=bloc              {Loop (n, li)}
-| CONTINUE PV                       {Continue ("loop")}
+| CONTINUE PV                       {Continue ("")}
 | CONTINUE n=ID                     {Continue (n)}
-| BREAK PV                          {Break ("loop")}
+| BREAK PV                          {Break ("")}
 | BREAK n=ID PV                     {Break (n)}
 | RETURN exp=e PV                   {Retour (exp)}
 

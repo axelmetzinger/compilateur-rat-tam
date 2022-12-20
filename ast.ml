@@ -162,7 +162,7 @@ type affectable =
   (* Accès à un identifiant représenté par son nom *)
   | Ident of Tds.info_ast
   (* Accès à une constante représentée par un info_ast et sa valeur *)
-  | Const of Tds.info_ast * int
+  | Const of Tds.info_ast
   (* Déréférencement d'une variable *)
   | DeRef of affectable
 

@@ -51,9 +51,10 @@ struct
     | Inf -> "< "
 
   (* Conversion des affectable *)
-  let string_of_affectable a =
+  let rec string_of_affectable a =
     match a with
     | Ident n -> n^" "
+    | DeRef na -> "*" ^ (string_of_affectable na)
 
   (* Conversion des expressions *)
   let rec string_of_expression e =
@@ -69,6 +70,10 @@ struct
           | Fraction -> "["^(string_of_expression e1)^"/"^(string_of_expression e2)^"] "
           | _ -> (string_of_expression e1)^(string_of_binaire b)^(string_of_expression e2)^" "
         end
+    | Ternaire (e1,e2,e3) -> "(" ^ (string_of_expression e1)^" ? "^(string_of_expression e2)^" : "^(string_of_expression e3)^") "
+    | Null -> "null"
+    | New t -> "(new "^(string_of_type t) ^ ")"
+    | Adresse id -> "&" ^ id
 
   (* Conversion des instructions *)
   let rec string_of_instruction i =
@@ -83,6 +88,9 @@ struct
     | TantQue (c,b) -> "TantQue  : TQ "^(string_of_expression c)^"\n"^
                                   "FAIRE \n"^((List.fold_right (fun i tq -> (string_of_instruction i)^tq) b ""))^"\n"
     | Retour (e) -> "Retour  : RETURN "^(string_of_expression e)^"\n"
+    | Loop (n, b) -> n ^ " : LOOP \n"^((List.fold_right (fun i tq -> (string_of_instruction i)^tq) b ""))^"\n"
+    | Break (n) -> "BREAK " ^ n ^ "\n"
+    | Continue (n) -> "CONTINUE " ^ n ^ "\n"
 
   (* Conversion des fonctions *)
   let string_of_fonction (Fonction(t,n,lp,li)) = (string_of_type t)^" "^n^" ("^((List.fold_right (fun (t,n) tq -> (string_of_type t)^" "^n^" "^tq) lp ""))^") = \n"^
