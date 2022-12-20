@@ -243,12 +243,16 @@ and analyse_code_instruction lloop i =
     ^ label lend
   | AstPlacement.Continue (n) ->
     (* Récupération de l'étiquette de début de la boucle *)
-    let (_, lend) = List.find (fun x -> (fst x) = n) lloop in
+    let (_, lend) =
+      (if (n = "") then List.hd lloop
+      else List.find (fun x -> (fst x) = n) lloop) in
     (* Saut inconditionnel vers le début de la boucle *)
     jump (n ^ lend)
   | AstPlacement.Break (n) ->
     (* Récupération de l'étiquette de fin de la boucle *)
-    let (_, lend) = List.find (fun x -> (fst x) = n) lloop in
+    let (_, lend) =
+      (if (n = "") then List.hd lloop
+      else List.find (fun x -> (fst x) = n) lloop) in
     (* Saut inconditionnel vers la fin de la boucle *)
     jump (lend)
   | AstPlacement.Retour (e, tret, tparam) ->
