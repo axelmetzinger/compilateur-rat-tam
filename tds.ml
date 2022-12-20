@@ -376,3 +376,10 @@ let get_adresse_var_info_ast ia =
   match !ia with
   | InfoVar(_, _, dep, base) -> (dep, base)
   | _ -> failwith "Appel get_adresse_var_info_ast pas sur un InfoVar"
+
+
+  (* Retourne si elle existe la valeur d'une constante à partir de son info_ast *)
+let get_valeur_const_info_ast ia =
+  match !ia with
+  | InfoConst(_, v) -> v
+  | _ -> failwith "Appel get_valeur_const_info_ast pas sur un InfoConst"

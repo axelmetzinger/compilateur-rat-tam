@@ -97,8 +97,8 @@ struct
 type affectable =
   (* Accès à un identifiant représenté par son nom *)
   | Ident of Tds.info_ast (* le nom de l'identifiant est remplacé par ses informations *)
-  (* TODO: Faire meiux, Accès à une constante représenté par une info_ast et sa valeur *)
-  | Const of Tds.info_ast * int
+  (* Accès à une constante représenté par une info_ast*)
+  | Const of Tds.info_ast
   (* Déréférencement d'une variable *)
   | DeRef of affectable
 
@@ -161,7 +161,7 @@ type binaire = Fraction | PlusInt | PlusRat | MultInt | MultRat | EquInt | EquBo
 type affectable =
   (* Accès à un identifiant représenté par son nom *)
   | Ident of Tds.info_ast
-  (* Accès à un identifiant représenté par son nom *)
+  (* Accès à une constante représentée par un info_ast et sa valeur *)
   | Const of Tds.info_ast * int
   (* Déréférencement d'une variable *)
   | DeRef of affectable

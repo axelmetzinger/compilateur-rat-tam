@@ -13,9 +13,9 @@ let rec analyse_type_affectable a =
   | AstTds.Ident(ia) ->
     (* Renvoie d'un couple composé du type de l'identifiant et du nouvel Ident *)
     (get_type_var_info_ast ia, AstType.Ident(ia))
-  | AstTds.Const(ia, v) ->
+  | AstTds.Const(ia) ->
     (* Renvoie d'un couple composé du type de la constante et du nouvel Const *)
-    (Int, AstType.Const(ia, v))
+    (Int, AstType.Const(ia))
   | AstTds.DeRef da ->
     let (ta, nda) = analyse_type_affectable da in
     match ta with

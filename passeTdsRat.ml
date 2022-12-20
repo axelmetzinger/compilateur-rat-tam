@@ -32,7 +32,7 @@ let rec analyse_tds_affectable tds a ecriture =
           (* C'est une information sur une constante *)
           | InfoConst(nom, v) ->
             if ecriture then raise (MauvaiseUtilisationIdentifiant nom)
-            else AstTds.Const(ia, v)
+            else AstTds.Const(ia)
           (* C'est une information sur une fonction *)
           | _ -> raise (MauvaiseUtilisationIdentifiant nom)
         end
