@@ -1,0 +1,14 @@
+main{
+    l : loop {
+        print 0;
+        break l;
+    }
+    m : loop {
+        print 1;
+        l : loop {
+            print 0;
+            break l;
+        }
+        break m;
+    }
+}

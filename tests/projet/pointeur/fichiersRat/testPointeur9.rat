@@ -1,0 +1,29 @@
+// Test de l'affichage des adresses des variables et des pointeurs
+// Ce test n'est possible ici que parceque l'adresse de base du tas est
+// toujours la même (0x1048575 puis se décrémente).
+// Tester cela dans des conditions réels sur une machine et un système classique
+// est impossible, car l'adresse de base du tas est attribuée de manière `aléatoire`
+// par le système au lancement du processus.
+main {
+    rat ** p = (new rat *);
+    *p = (new rat);
+    **p = [1/2];
+    int ** q = (new int *);
+    *q = (new int);
+    **q = 3;
+    rat r = [3/4];
+    int i = 5;
+
+    print &p;   // 0x0
+    print p;    // 0x1048575
+    print *p;   // 0x1048573
+    print **p;  // [1/2]
+    print &q;   // 0x1
+    print q;    // 0x1048572
+    print *q;   // 0x1048571
+    print **q;  // 3
+    print &r;   // 0x2
+    print r;    // [3/4]
+    print &i;   // 0x4
+    print i;    // 5
+}

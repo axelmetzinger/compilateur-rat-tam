@@ -1,0 +1,11 @@
+// Test les pointeurs de pointeurs avec initialisation sur des rat avec modification
+test {
+    rat ** test = (new rat *);
+    * test = (new rat);
+    ** test = [3/4];
+    rat * test2 = (new rat);
+    * test2 = [1/2];
+    test = & test2;
+
+    print ** test;  // [1/2]
+}

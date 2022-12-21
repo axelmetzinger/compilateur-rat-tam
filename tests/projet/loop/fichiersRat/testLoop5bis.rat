@@ -1,0 +1,12 @@
+int heure (int x) {
+    print x;
+    return x + 1;
+}
+
+main {
+    int h = 0;
+    heure : loop {
+        if (h=24){ break heure; }
+        h = call heure(h);
+    }
+}

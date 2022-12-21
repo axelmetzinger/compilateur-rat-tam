@@ -3,6 +3,7 @@
 open Tds
 open Exceptions
 open Ast
+open Printf
 
 type t1 = Ast.AstSyntax.programme
 type t2 = Ast.AstTds.programme
@@ -182,7 +183,7 @@ let rec analyse_tds_instruction tds oia lloop i =
       (* Renvoie la nouvelle structure de la boucle *)
       AstTds.TantQue (nc, bast)
   | AstSyntax.Loop (nom, b) ->
-    if (nom <> "_" && List.exists (fun x -> x = nom) lloop) then print_endline ("\027[31m/!\\ Attention : loop de même nom imbriqués (`"^ nom ^"`)\027[0m");
+    if (nom <> "_" && List.exists (fun x -> x = nom) lloop) then eprintf "\027[31m/!\\ Attention : loop de même nom imbriqués (`%s`)\027[0m\n" nom;
     let nb = analyse_tds_bloc tds oia (nom::lloop) b in
     AstTds.Loop(nom, nb)
   | AstSyntax.Continue(n) ->
@@ -254,22 +255,35 @@ let rec aInstructionRetour nf li =
   | [] -> false
   | (AstSyntax.Retour _)::[] -> true
   | (AstSyntax.Retour _)::_ ->
-    print_endline ("\027[31m/!\\ Attention : code mort, le `return` de la fonction `" ^ nf
-      ^ "` est suivi d'autres instructions\027[0m");
+    eprintf "\027[31m/!\\ Attention : code mort, le `return` de la fonction `%s` est suivi d'autres instructions\027[0m\n" nf;
     true
+  | (AstSyntax.Continue _)::q | (AstSyntax.Break _)::q ->
+    if (q <> []) then eprintf "\027[31m/!\\ Attention : code mort, le `continue` ou `break` de la fonction `%s` est suivi d'autres instructions\027[0m\n" nf;
+    false
   | (AstSyntax.Conditionnelle (_,t,e))::q ->
+    if (e = []) then aInstructionRetour nf q
+    else
     begin
       match aInstructionRetour nf t, aInstructionRetour nf e, q with
       | true, true, [] -> true
-      | true, true, _ -> print_endline ("\027[31m/!\\ Attention : code mort, le `return` de la fonction `" ^ nf
-        ^ "` est suivi d'autres instructions\027[0m");
+      | true, true, _ -> eprintf "\027[31m/!\\ Attention : code mort, le `return` de la fonction `%s` est suivi d'autres instructions\027[0m\n" nf;
         true
       | _ -> aInstructionRetour nf q
     end
-  | (AstSyntax.TantQue (_, b))::q | (AstSyntax.Loop (_, b))::q ->
+  | (AstSyntax.Loop (_, b))::q ->
     begin
-      match aInstructionRetour nf b with
-      | true -> true
+      match aInstructionRetour nf b, q with
+      | true, [] -> true
+      | _ -> aInstructionRetour nf q
+    end
+  | (AstSyntax.TantQue (c, b))::q ->
+    begin
+      match c, aInstructionRetour nf b, q with
+      (* Attention analyse non-exhaustive !
+         L'analyse à la volée de l'expression est trop
+         complexe pour être réalisée ici. On couvre cepndant
+         le cas le plus général d'une boucle while infinie. *)
+      | AstSyntax.Booleen(true), true, [] -> true
       | _ -> aInstructionRetour nf q
     end
   | _::q -> aInstructionRetour nf q

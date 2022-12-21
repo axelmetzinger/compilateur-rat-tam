@@ -1,0 +1,20 @@
+// Version simplifiée du test fourni dans l'énoncé du projet
+// Affiche les heures et les minutes de 00:00 à 01:59
+main {
+    int h = 0;
+    heure : loop {
+        int m = 0;
+        loop {
+            if (m=60){
+                break;
+            }
+            if (h=2){
+                break heure;
+            }
+            print h;
+            print m;
+            m = (m+1);
+        }
+        h = (h+1);
+    }
+}

@@ -1,0 +1,12 @@
+// Test des pointeurs sur rat
+test {
+    rat * pb = (new rat);
+    *pb = [1/2];
+    if ((num *pb) = 1) {
+        if ((denom *pb) = 2) {
+            rat r = [3/4];
+            rat * pb2 = &r;
+            print *pb2;
+        }
+    }
+}

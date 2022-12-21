@@ -1,0 +1,10 @@
+// Test des poiniteurs sur bool
+test {
+    bool * pb = (new bool);
+    *pb = true;
+    if (*pb) {
+        bool b = false;
+        bool * pb2 = &b;
+        print *pb2;
+    }
+}

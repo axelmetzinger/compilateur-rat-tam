@@ -1,0 +1,13 @@
+// Test les pointeurs de pointeurs sans initialisation sur des rat
+test {
+    rat ** a = null;
+    rat c = [6/12];
+    rat * b = &c;
+    a = &b;
+
+    print a;    // 0x3
+    print &b;   // 0x3
+    print *a;   // 0x1
+    print &c;   // 0x1
+    print **a;  // [1/2]
+}

@@ -99,6 +99,7 @@ a :
 
 e : 
 | CALL n=ID PO lp=e* PF                 {AppelFonction (n,lp)}
+| PO exp=e PF                           {exp}
 | TRUE                                  {Booleen true}
 | FALSE                                 {Booleen false}
 | e=ENTIER                              {Entier e}
@@ -114,6 +115,5 @@ e :
 | NULL                                  {Null}
 | PO NEW t=typ PF                       {New t}
 | ADDR n=ID                             {Adresse n}
-| PO exp=e PF                           {exp}
 
 

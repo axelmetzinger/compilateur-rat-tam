@@ -164,7 +164,7 @@ type affectable =
   (* Accès à une constante représentée par un info_ast et sa valeur *)
   | Const of Tds.info_ast
   (* Déréférencement d'une variable *)
-  | DeRef of affectable
+  | DeRef of affectable * typ
 
 (* Expressions existantes dans Rat *)
 (* = expression de AstTds *)

@@ -12,7 +12,7 @@ type t2 = string
 (* analyse_code_affectable : AstPlacement.affectable -> string *)
 (* Paramètre e : l'expression à analyser *)
 (* Tranforme l'expression en chaîne d'instructions en code TAM représentant l'expression *)
-let rec analyse_code_affecable a ecriture =
+let rec analyse_code_affecable a ecriture deref =
   match a with
   | AstType.Ident ia ->
     (* Récupération de l'adresse de la variable *)
@@ -22,8 +22,12 @@ let rec analyse_code_affecable a ecriture =
     (* Récupèration du type de la variable *)
     let t = get_type_var_info_ast ia in
     (* Si ce type est compatible avec un pointeur ou n'est pas en écriture *)
-    if ((est_compatible t (Pointeur(Undefined)))
-      || not ecriture)
+    if (est_compatible t (Pointeur(Undefined))) then
+      (* Si on est en écriture alors on stocke l'adresse de la variable en haut de la pile *)
+      if (ecriture && not deref) then store taille depl base
+      (* Sinon on charge l'adresse de la variable dans la pile *)
+      else load taille depl base
+    else if (not ecriture)
     (* Alors on charge en mémoire la variable *)
     then load taille depl base
     (* Sinon on stock la valeur chargée dans la pile dans la variable *)
@@ -31,13 +35,14 @@ let rec analyse_code_affecable a ecriture =
   | AstType.Const(ia) ->
     (* Charge la constante dans la pile *)
     loadl_int (get_valeur_const_info_ast ia)
-  | AstType.DeRef da ->
+  | AstType.DeRef (da, t) ->
+    let taille = getTaille t in
     (* Analyse de l'expression correspondant à l'affectable *)
-    analyse_code_affecable da ecriture
+    analyse_code_affecable da ecriture true
     (* Si on est en écriture alors écrit à l'adresse en haut de la pile *)
-    ^ (if ecriture then storei 1
+    ^ (if (ecriture && not deref) then storei taille
     (* Sinon charge la valeur pointée par l'adresse en haut de la pile *)
-    else loadi 1)
+    else loadi taille)
 
 (* analyse_code_expression : AstPlacement.expression -> string *)
 (* Paramètre e : l'expression à analyser *)
@@ -51,7 +56,7 @@ let rec analyse_code_expression e =
     ^ call "SB" (get_nom_fun_info_ast ia)
   | AstType.Affectable(a) ->
     (* Analyse de l'affectable *)
-    analyse_code_affecable a false
+    analyse_code_affecable a false false
   | AstType.Booleen(b) ->
     (* Charge 1 dans la pile si le booléen est vrai et 0 sinon *)
     if b then loadl_int 1
@@ -70,11 +75,11 @@ let rec analyse_code_expression e =
     ^ analyse_code_expression e2
     (* Exécution du code correspondant à l'opération *)
     ^ (match op with
-      | AstType.Fraction -> ""
+      | AstType.Fraction -> call "SB" "norm"
       | AstType.PlusInt -> subr "IAdd"
-      | AstType.PlusRat -> call "SB" "RAdd"
+      | AstType.PlusRat -> call "SB" "RAdd" ^ call "SB" "norm"
       | AstType.MultInt -> subr "IMul"
-      | AstType.MultRat -> call "SB" "RMul"
+      | AstType.MultRat -> call "SB" "RMul" ^ call "SB" "norm"
       | AstType.EquInt -> subr "IEq"
       | AstType.EquBool -> subr "IEq"
       | AstType.Inf -> subr "ILss")
@@ -145,7 +150,7 @@ and analyse_code_instruction lloop i =
       (* Analyse de l'expression à affecter *)
       analyse_code_expression e
       (* Analyse de l'affectable *)
-      ^ analyse_code_affecable a true
+      ^ analyse_code_affecable a true false
     | AstPlacement.AffichageBool e ->
       (* Analyse de l'expression à afficher *)
       analyse_code_expression e
@@ -242,11 +247,11 @@ and analyse_code_instruction lloop i =
     ^ label lend
   | AstPlacement.Continue (n) ->
     (* Récupération de l'étiquette de début de la boucle *)
-    let (_, lend) =
+    let (lbeg, lend) =
       (if (n = "") then List.hd lloop
       else List.find (fun x -> (fst x) = n) lloop) in
     (* Saut inconditionnel vers le début de la boucle *)
-    jump (n ^ lend)
+    jump (lbeg ^ lend)
   | AstPlacement.Break (n) ->
     (* Récupération de l'étiquette de fin de la boucle *)
     let (_, lend) =

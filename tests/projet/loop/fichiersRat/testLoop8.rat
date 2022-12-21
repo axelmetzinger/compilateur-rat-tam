@@ -1,0 +1,8 @@
+main {
+    while (true) {
+        int test = 1;
+        if (test = 5) {
+            continue;
+        }
+    }
+}

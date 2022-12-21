@@ -19,7 +19,7 @@ let rec analyse_type_affectable a =
   | AstTds.DeRef da ->
     let (ta, nda) = analyse_type_affectable da in
     match ta with
-    | Pointeur(t) -> (t, AstType.DeRef(nda))
+    | Pointeur(t) -> (t, AstType.DeRef(nda, t))
     | _ -> raise (TypeInattendu(ta, Pointeur(Undefined)))
 
 (* analyse_type_expression : AstTds.expression -> AstType.expression *)
@@ -100,7 +100,7 @@ let rec analyse_type_expression e =
     (* Si le type de la condition est Bool et que les types des deux expressions
        sont compatibles, renvoie d'un couple composé du type de l'expression
        et du nouveau Ternaire *)
-    if (tc = Bool) then
+    if (est_compatible tc Bool) then
       if (est_compatible te1 te2) then (te1, AstType.Ternaire(nc, ne1, ne2))
       (* Sinon, levée de l'exception TypesRetourIncompatibles *)
       else raise (TypesRetourIncompatibles(te1, te2))
@@ -133,7 +133,7 @@ and analyse_type_instruction i =
     let (te, ne) = analyse_type_expression e in
     (* Si le type de l'expression est compatible avec le type de la déclaration,
        modification du type dans la TDS et renvoie d'un nouveau Declaration *)
-    if (t = te) then
+    if (est_compatible t te) then
       begin
         modifier_type_variable t ia;
         AstType.Declaration(ia, ne)
@@ -148,7 +148,7 @@ and analyse_type_instruction i =
     (* Récupération du type de l'identifiant attendu *)
     (* Si le type de l'expression est compatible avec le type de l'affectable,
        renvoie d'une nouvelle Affectation *)
-    if (ta = te) then AstType.Affectation(na, ne)
+    if (est_compatible ta te) then AstType.Affectation(na, ne)
     (* Sinon, levée de l'exception TypeInattendu *)
     else (raise (TypeInattendu(te, ta)))
   | AstTds.Affichage e ->
@@ -168,7 +168,7 @@ and analyse_type_instruction i =
     let (tc, nc) = analyse_type_expression c in
     (* Si le type de l'expression est Booléen, analyse des blocs
        et renvoie d'une nouvelle Conditionnelle *)
-    if (tc = Bool) then
+    if (est_compatible tc Bool) then
       let nbt = analyse_type_bloc tia in
       let nbe = analyse_type_bloc eia in
       AstType.Conditionnelle(nc, nbt, nbe)
@@ -179,7 +179,7 @@ and analyse_type_instruction i =
     let (tc, nc) = analyse_type_expression c in
     (* Si le type de l'expression est Booléen, analyse du bloc
        et renvoie d'un nouveau TantQue *)
-    if (tc = Bool) then
+    if (est_compatible tc Bool) then
       let nb = analyse_type_bloc bast in
       AstType.TantQue(nc, nb)
     (* Sinon, levée de l'exception TypeInattendu *)
@@ -202,7 +202,7 @@ and analyse_type_instruction i =
     let (t_ret, _) = get_type_fun_info_ast ia in
     (* Si le type de l'expression est compatible avec le type de retour,
        renvoie d'un nouveau Retour *)
-    if (te = t_ret) then
+    if (est_compatible te t_ret) then
       AstType.Retour(ne, ia)
     (* Sinon, levée de l'exception TypeInattendu *)
     else raise (TypeInattendu(te, t_ret))

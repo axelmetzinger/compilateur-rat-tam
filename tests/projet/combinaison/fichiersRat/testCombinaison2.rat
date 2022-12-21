@@ -1,0 +1,20 @@
+// Calcul de la factorielle de n = 5
+main {
+    int n = 5;
+    int i = 1;
+    int fact = 1;
+    int * cpt = &i;
+
+    loop {
+        if (n < * cpt) {
+            break;
+        }
+        fact = fact * (* cpt);
+        *cpt = *cpt + 1;
+    }
+
+    print n;                    // Affiche 5
+    print i;                    // Affiche 6
+    print (n = 0 ? 1 : fact);   // Affiche 120
+
+}

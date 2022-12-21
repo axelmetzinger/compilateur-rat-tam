@@ -1,0 +1,13 @@
+// Affiche les nombres entre 0 et 10 en remplacant
+// les nombres impairs par 0
+test {
+    int i = 0;
+    while (i < 11) {
+        if ((denom [i/2]) = 1) {
+            print i;
+        } else {
+            print 0;
+        }
+        i = i + 1;
+    }
+}

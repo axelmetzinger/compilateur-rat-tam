@@ -1,0 +1,16 @@
+// Version simplifiée du test fourni dans l'énoncé du projet
+// Affiche les nombres entre 00 et 29 sur deux décimales
+main{
+    int d = 0;
+    int u = 0;
+    l : loop {
+        if (d=3) { break l;}
+        u = 0 ;
+        l : loop {
+            if (u=10) { break l;}
+            print d; print u;
+            u = (u+1);
+        }
+        d=(d+1);
+    }
+}
