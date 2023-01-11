@@ -9,8 +9,10 @@ open Code
 type t1 = AstPlacement.programme
 type t2 = string
 
-(* analyse_code_affectable : AstPlacement.affectable -> string *)
-(* Paramètre e : l'expression à analyser *)
+(* analyse_code_affectable : AstPlacement.affectable -> bool -> bool -> string *)
+(* Paramètre a : l'expression à analyser *)
+(* Paramètre ecriture : true si on est en écriture (partie gauche d'une affectation), false sinon *)
+(* Paramètre deref : true si on a déjà effectué un déréférencement, false sinon *)
 (* Tranforme l'expression en chaîne d'instructions en code TAM représentant l'expression *)
 let rec analyse_code_affecable a ecriture deref =
   match a with
@@ -118,7 +120,8 @@ let rec analyse_code_expression e =
     loadl_int 0 (* Charge l'adresse nulle dans la pile *)
 
 
-(* analyse_code_bloc : AstPlacement.bloc -> string *)
+(* analyse_code_bloc : string list -> AstPlacement.bloc -> string *)
+(* Paramètre lloop : liste des étiquettes des boucles dans laquelle le bloc est inclus *)
 (* Paramètre li : liste d'instructions à analyser *)
 (* Paramètre taille : taille des variables locales au bloc en mémoire (pile) *)
 (* Tranforme le bloc en une chaîne d'instructions correspondant au bloc *)
@@ -130,7 +133,8 @@ let rec analyse_code_bloc lloop (li, taille) =
   (* Libération de l'espace mémoire réservé pour les variables locales au bloc *)
   ^ pop 0 taille
 
-(* analyse_code_instruction : AstPlacement.instruction -> string *)
+(* analyse_code_instruction : string list -> AstPlacement.instruction -> string *)
+(* Paramètre lloop : liste des étiquettes des boucles dans laquelle l'instruction est incluse *)
 (* Paramètre i : l'instruction à analyser *)
 (* Tranforme l'instruction en une chaîne correspondant à l'instruction *)
 and analyse_code_instruction lloop i =

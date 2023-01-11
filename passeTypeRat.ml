@@ -17,10 +17,17 @@ let rec analyse_type_affectable a =
     (* Renvoie d'un couple composé du type de la constante et du nouvel Const *)
     (Int, AstType.Const(ia))
   | AstTds.DeRef da ->
+    (* Analyse de l'affectable *)
     let (ta, nda) = analyse_type_affectable da in
     match ta with
-    | Pointeur(t) -> (t, AstType.DeRef(nda, t))
-    | _ -> raise (TypeInattendu(ta, Pointeur(Undefined)))
+    | Pointeur(t) ->
+      (* Si l'affectable est de type Pointeur, renvoie d'un couple composé du type
+       de l'affectable et du nouveau DeRef *)
+      (t, AstType.DeRef(nda, t))
+    | _ ->
+      (* Si l'affectable n'est pas un pointeur alors il ne peut pas être déréférencé
+         on renvoie donc une exception *)
+      raise (TypeInattendu(ta, Pointeur(Undefined)))
 
 (* analyse_type_expression : AstTds.expression -> AstType.expression *)
 (* Paramètre e : l'expression à analyser *)

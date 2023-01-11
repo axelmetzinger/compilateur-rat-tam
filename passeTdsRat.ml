@@ -48,7 +48,7 @@ let rec analyse_tds_affectable tds a ecriture =
 (* Paramètre e : l'expression à analyser *)
 (* Vérifie la bonne utilisation des identifiants et transforme l'expression
 en une expression de type AstTds.expression *)
-(* Erreur si mauvaise utilisation des identifiants *)
+(* Erreur si mauvaise utilisation des identifiants et accès à l'adresse d'une constante ou d'une fonction *)
 and analyse_tds_expression tds e =
   match e with
   | AstSyntax.AppelFonction(nom, le) ->
@@ -78,16 +78,18 @@ and analyse_tds_expression tds e =
   | AstSyntax.Booleen(b) -> AstTds.Booleen(b)
   | AstSyntax.Entier(i) -> AstTds.Entier(i)
   | AstSyntax.Unaire (op, e) ->
-    (* Création d'une liste d'expressions transformées *)
+    (* Analyse de l'expression *)
     let ne = analyse_tds_expression tds e in
     AstTds.Unaire(op, ne)
   | AstSyntax.Binaire (op, e1, e2) ->
-    (* Création de deux listes d'expressions transformées *)
+    (* Analyse des expressions de l'opération binaire *)
     let ne1 = analyse_tds_expression tds e1 in
     let ne2 = analyse_tds_expression tds e2 in
     AstTds.Binaire(op, ne1, ne2)
   | AstSyntax.Ternaire (c, e1, e2) ->
+    (* Analyse de la condition *)
     let nc = analyse_tds_expression tds c in
+    (* Analyse des expressions de l'opération ternaire *)
     let ne1 = analyse_tds_expression tds e1 in
     let ne2 = analyse_tds_expression tds e2 in
     AstTds.Ternaire(nc, ne1, ne2)
@@ -97,24 +99,30 @@ and analyse_tds_expression tds e =
       match (chercherGlobalement tds nom) with
       (* L'identifiant recherché n'existe pas *)
       |None -> raise (IdentifiantNonDeclare nom)
-      (* L'identifiant est trdans la tds *)
+      (* L'identifiant est dans la tds *)
       | Some ia ->
         begin
           match info_ast_to_info ia with
-          | InfoVar _ -> AstTds.Adresse(ia)
-          | _ -> raise (AccesAdresseInvalide nom)
+          | InfoVar _ ->
+            (* L'identifiant correspond à une variable,
+               on peut alors récupérer son adresse *)
+            AstTds.Adresse(ia)
+          | _ ->
+            (* Impossible de récupérer l'adresse d'une constante ou d'une fonction *)
+            raise (AccesAdresseInvalide nom)
         end
     end
   | AstSyntax.Null -> AstTds.Null
 
 
-(* analyse_tds_instruction : tds -> info_ast option -> AstSyntax.instruction -> AstTds.instruction *)
-(* Paramètre tds : la table des symboles courante *)
-(* Paramètre oia : None si l'instruction i est dans le bloc principal,
-                   Some ia où ia est l'information associée à la fonction dans laquelle est l'instruction i sinon *)
-(* Paramètre i : l'instruction à analyser *)
+(* analyse_tds_instruction : tds -> info_ast option -> string list -> AstSyntax.instruction -> AstTds.instruction *)
+(* Paramètre tds    : la table des symboles courante *)
+(* Paramètre oia    : None si l'instruction i est dans le bloc principal,
+                      Some ia où ia est l'information associée à la fonction dans laquelle est l'instruction i sinon *)
+(* Paramètre lloop  : liste des noms des boucles dans lesquelles est incluse l'instruction i *)
+(* Paramètre i      : l'instruction à analyser *)
 (* Vérifie la bonne utilisation des identifiants et transforme l'instruction
-en une instruction de type AstTds.instruction *)
+   en une instruction de type AstTds.instruction *)
 (* Erreur si mauvaise utilisation des identifiants *)
 let rec analyse_tds_instruction tds oia lloop i =
   match i with
@@ -183,22 +191,33 @@ let rec analyse_tds_instruction tds oia lloop i =
       (* Renvoie la nouvelle structure de la boucle *)
       AstTds.TantQue (nc, bast)
   | AstSyntax.Loop (nom, b) ->
-    if (nom <> "_" && List.exists (fun x -> x = nom) lloop) then eprintf "\027[31m/!\\ Attention : loop de même nom imbriqués (`%s`)\027[0m\n" nom;
+    (* Si la nouvelle loop est imbriquée dans une loop de même nom alors affichage d'un avertissement *)
+    (* Pas d'avertissement si deux boucle non nommée sont imbriquées *)
+    if (nom <> "_" && List.exists (fun x -> x = nom) lloop)
+      then eprintf "\027[31m/!\\ Attention : loop de même nom imbriqués (`%s`)\027[0m\n" nom;
+    (* Analyse du bloc *)
     let nb = analyse_tds_bloc tds oia (nom::lloop) b in
+    (* Renvoie la nouvelle structure de la boucle *)
     AstTds.Loop(nom, nb)
   | AstSyntax.Continue(n) ->
+    (* Lève une exception si l'instruction `continue` se trouve hors d'une `loop` *)
     if (lloop = []) then raise (ContinueHorsLoop n)
+    (* S'il n'y a pas de nom spécifié ou que le nom existe alors renvoie du nouveau continue *)
     else if (n = "" || List.exists (fun x -> x = n) lloop) then AstTds.Continue(n)
+    (* Lève une exception si le nom de la boucle passé en paramètre n'existe pas *)
     else raise (IdentifiantNonDeclare n)
   | AstSyntax.Break(n) ->
+    (* Lève une exception si l'instruction `break` se trouve hors d'une `loop` *)
     if (lloop = []) then raise (BreakHorsLoop n)
+    (* S'il n'y a pas de nom spécifié ou que le nom existe alors renvoie du nouveau break *)
     else if (n = "" || List.exists (fun x -> x = n) lloop) then AstTds.Break(n)
+    (* Lève une exception si le nom de la boucle passé en paramètre n'existe pas *)
     else raise (IdentifiantNonDeclare n)
   | AstSyntax.Retour (e) ->
       begin
       (* On récupère l'information associée à la fonction à laquelle le return est associée *)
       match oia with
-        (* Il n'y a pas d'information -> l'instruction est dans le bloc principal : erreur *)
+        (* Il n'y a pas d'information -> l'instruction est dans le bloc principal : exception *)
       | None -> raise RetourDansMain
         (* Il y a une information -> l'instruction est dans une fonction *)
       | Some ia ->
@@ -207,12 +226,12 @@ let rec analyse_tds_instruction tds oia lloop i =
         AstTds.Retour (ne,ia)
       end
 
-
-(* analyse_tds_bloc : tds -> info_ast option -> AstSyntax.bloc -> AstTds.bloc *)
-(* Paramètre tds : la table des symboles courante *)
-(* Paramètre oia : None si le bloc li est dans le programme principal,
-                   Some ia où ia est l'information associée à la fonction dans laquelle est le bloc li sinon *)
-(* Paramètre li : liste d'instructions à analyser *)
+(* analyse_tds_bloc : tds -> info_ast option -> string list -> AstSyntax.bloc -> AstTds.bloc *)
+(* Paramètre tds    : la table des symboles courante *)
+(* Paramètre oia    : None si le bloc li est dans le programme principal,
+                      Some ia où ia est l'information associée à la fonction dans laquelle est le bloc li sinon *)
+(* Paramètre lloop  : liste des noms des boucles dans lesquelles est inclus le bloc *)
+(* Paramètre li     : liste d'instructions à analyser *)
 (* Vérifie la bonne utilisation des identifiants et transforme le bloc en un bloc de type AstTds.bloc *)
 (* Erreur si mauvaise utilisation des identifiants *)
 and analyse_tds_bloc tds oia lloop li =
@@ -224,6 +243,7 @@ and analyse_tds_bloc tds oia lloop li =
    let nli = List.map (analyse_tds_instruction tdsbloc oia lloop) li in
    (* afficher_locale tdsbloc ; *) (* décommenter pour afficher la table locale *)
    nli
+
 
 (* analyse_tds_parametre : tds -> (typ * string) -> (typ * info_ast) *)
 (* Paramètre tds : la table des symboles courante *)
@@ -253,28 +273,35 @@ let analyse_tds_parametre tds (t, n) =
 let rec aInstructionRetour nf li =
   match li with
   | [] -> false
-  | (AstSyntax.Retour _)::[] -> true
+  | (AstSyntax.Retour _)::[] -> true  (* Le `return` est la dernière instruction de la liste *)
   | (AstSyntax.Retour _)::_ ->
+    (* Le `return` n'est pas la dernière instruction de la liste : warning pour code mort *)
     eprintf "\027[31m/!\\ Attention : code mort, le `return` de la fonction `%s` est suivi d'autres instructions\027[0m\n" nf;
     true
   | (AstSyntax.Continue _)::q | (AstSyntax.Break _)::q ->
+    (* Le `continue` ou `break` est suivi d'autres instructions : warning pour code mort *)
     if (q <> []) then eprintf "\027[31m/!\\ Attention : code mort, le `continue` ou `break` de la fonction `%s` est suivi d'autres instructions\027[0m\n" nf;
     false
   | (AstSyntax.Conditionnelle (_,t,e))::q ->
-    if (e = []) then aInstructionRetour nf q
-    else
+    (* On regarde si les deux branches sont des `return` (sinon si la dernière instruction de la liste est un `return`*)
     begin
       match aInstructionRetour nf t, aInstructionRetour nf e, q with
-      | true, true, [] -> true
-      | true, true, _ -> eprintf "\027[31m/!\\ Attention : code mort, le `return` de la fonction `%s` est suivi d'autres instructions\027[0m\n" nf;
+      | true, true, [] -> true (* Les deux branches sont des `return` et le `return` est la dernière instruction de la liste *)
+      | true, true, _ ->
+        (* Les deux branches sont des `return` mais le `return` n'est pas la dernière instruction de la liste : warning pour code mort *)
+        eprintf "\027[31m/!\\ Attention : code mort, le `return` de la fonction `%s` est suivi d'autres instructions\027[0m\n" nf;
         true
-      | _ -> aInstructionRetour nf q
+      | _ -> aInstructionRetour nf q (* On regarde si la suite des instructions de la liste contient un `return` *)
     end
   | (AstSyntax.Loop (_, b))::q ->
     begin
       match aInstructionRetour nf b, q with
-      | true, [] -> true
-      | _ -> aInstructionRetour nf q
+      | true, [] -> true  (* La boucle est un `return` et le `return` est la dernière instruction de la liste *)
+      | true, _ ->
+        (* La boucle est un `return` mais le `return` n'est pas la dernière instruction de la liste : warning pour code mort *)
+        eprintf "\027[31m/!\\ Attention : code mort, le `return` de la fonction `%s` est suivi d'autres instructions\027[0m" nf;
+        true
+      | _ -> aInstructionRetour nf q (* On regarde si la suite des instructions de la liste contient un `return` *)
     end
   | (AstSyntax.TantQue (c, b))::q ->
     begin
@@ -284,9 +311,13 @@ let rec aInstructionRetour nf li =
          complexe pour être réalisée ici. On couvre cepndant
          le cas le plus général d'une boucle while infinie. *)
       | AstSyntax.Booleen(true), true, [] -> true
-      | _ -> aInstructionRetour nf q
+      | AstSyntax.Booleen(true), true, _ ->
+        (* La boucle est un `return` mais le `return` n'est pas la dernière instruction de la liste : warning pour code mort *)
+        eprintf "\027[31m/!\\ Attention : code mort, le `return` de la fonction `%s` est suivi d'autres instructions\027[0m" nf;
+        true
+      | _ -> aInstructionRetour nf q (* On regarde si la suite des instructions de la liste contient un `return` *)
     end
-  | _::q -> aInstructionRetour nf q
+  | _::q -> aInstructionRetour nf q (* On regarde si la suite des instructions de la liste contient un `return` *)
 
 
 (* analyse_tds_fonction : tds -> AstSyntax.fonction -> AstTds.fonction *)
